@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Header from './Header';
 import FriendLabel from './FriendLabel';
+import { Link } from 'react-router-dom';
 
 const FriendList = () => {
 	const categories = ['inbox', 'request'];
@@ -12,7 +13,7 @@ const FriendList = () => {
 	};
 
 	return (
-		<div className='w-3/12 flex flex-col items-stretch border-x border-indigo-200'>
+		<div className='w-full md:w-4/12 lg:w-3/12 flex flex-col items-stretch border-x border-indigo-200'>
 			<Header />
 			<div className='flex mx-2 overflow-x-auto'>
 				{categories.map((item: string) => (
@@ -41,10 +42,13 @@ const FriendList = () => {
 			<div className='flex-1 overflow-y-auto'>
 				{category === 'inbox' && (
 					<>
-						<FriendLabel isOnline isKnown />
-						<FriendLabel isKnown />
-						<FriendLabel isOnline isKnown />
-						<FriendLabel isKnown />
+						<Link to={'/user-rasel'} replace>
+							<FriendLabel isOnline isKnown />
+						</Link>
+						<div className='w-full md:hidden border-b border-indigo-200'></div>
+						<Link to={'/user-siyam'} replace>
+							<FriendLabel isKnown />
+						</Link>
 					</>
 				)}
 

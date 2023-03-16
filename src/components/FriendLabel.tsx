@@ -7,20 +7,26 @@ type PropType = {
 
 const FriendLabel = ({ isOnline = false, isKnown = false }: PropType) => {
 	return (
-		<div className='mx-2 p-2 flex items-center hover:bg-indigo-100 rounded-md'>
-			<div className='relative flex-shrink-0 w-14 h-14 border border-indigo-200 rounded-full'>
+		<div className='px-3 py-2.5 flex items-center hover:bg-indigo-100'>
+			<div
+				className={`relative flex-shrink-0 w-10 h-10 md:w-14 md:h-14 border ${
+					isOnline ? 'border-indigo-500' : 'border-indigo-200'
+				} rounded-full`}
+			>
 				{!!isKnown && (
 					<>
 						{isOnline ? (
-							<div className='absolute bottom-2 -right-1 w-3 h-3 bg-indigo-500 rounded-full border border-indigo-200'></div>
+							<div className='absolute bottom-0.5 -right-0.5 md:bottom-2 md:-right-1 w-3 h-3 bg-indigo-500 rounded-full border border-indigo-200'></div>
 						) : (
-							<div className='absolute bottom-2 -right-1 w-3 h-3 bg-indigo-200 rounded-full border border-indigo-200'></div>
+							<div className='absolute bottom-0.5 -right-0.5 md:bottom-2 md:-right-1 w-3 h-3 bg-indigo-200 rounded-full border border-indigo-200'></div>
 						)}
 					</>
 				)}
 			</div>
 			<div className='p-2 flex-1 flex-shrink-0'>
-				<h3 className='font-semibold tracking-wide'>User Name</h3>
+				<h3 className='font-medium md:font-semibold tracking-wide'>
+					User Name
+				</h3>
 				{isKnown ? (
 					<p className='text-sm font-light tracking-wide text-gray-500'>
 						This is my message

@@ -1,15 +1,27 @@
 import React from 'react';
-import FriendList from './components/FriendList';
-import MessageBox from './components/MessageBox/MessageBox';
+import Layouts from './components/Layouts';
+import { Routes, Route } from 'react-router-dom';
+import MessagePage from './pages/MessagePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import RequireAuth from './utils/RequireAuth';
 
 const App = () => {
 	return (
-		<div className='h-full bg-indigo-50'>
-			<div className='w-full h-screen flex items-stretch'>
-				<FriendList />
-				<MessageBox />
-			</div>
-		</div>
+		<Layouts>
+			<Routes>
+				<Route path='/login' element={<LoginPage />} />
+				<Route path='/register' element={<RegisterPage />} />
+				<Route
+					path='/:username?'
+					element={
+						<RequireAuth>
+							<MessagePage />
+						</RequireAuth>
+					}
+				/>
+			</Routes>
+		</Layouts>
 	);
 };
 
