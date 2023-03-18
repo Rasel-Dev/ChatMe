@@ -42,11 +42,11 @@ const FriendList = () => {
 			<div className='flex-1 overflow-y-auto'>
 				{category === 'inbox' && (
 					<>
-						<Link to={'/user-rasel'} replace>
+						<Link to={'/f/1'} replace>
 							<FriendLabel isOnline isKnown />
 						</Link>
 						<div className='w-full md:hidden border-b border-indigo-200'></div>
-						<Link to={'/user-siyam'} replace>
+						<Link to={'/f/5'} replace>
 							<FriendLabel isKnown />
 						</Link>
 					</>

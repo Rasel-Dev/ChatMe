@@ -4,3 +4,9 @@ type LoginActionType = {
 };
 
 export type AppActionType = LoginActionType;
+
+// Handler types
+export type CB = (
+	error?: { [index: string]: string } | null,
+	data?: unknown
+) => void;

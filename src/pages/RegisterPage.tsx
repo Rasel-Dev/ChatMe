@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Button from '../components/Buttons/Button';
-import Input from '../components/Inputs/Input';
+import Input, { PasswordInput } from '../components/Inputs/Input';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useApp from '../hooks/useApp';
 import { InputType } from '../types/custom';
@@ -96,6 +96,7 @@ const RegisterPage = () => {
 						hint='Fullname'
 						value={form.fullname}
 						handler={onChange}
+						isLoading={!!errors?.loading}
 						error={errors?.fullname?.toString()}
 					/>
 					<div className='w-full my-4' />
@@ -104,6 +105,7 @@ const RegisterPage = () => {
 						hint='Username'
 						value={form.username}
 						handler={onChange}
+						isLoading={!!errors?.loading}
 						error={errors?.username?.toString()}
 					/>
 					<div className='w-full my-4' />
@@ -113,15 +115,16 @@ const RegisterPage = () => {
 						hint='Email address'
 						value={form.email}
 						handler={onChange}
+						isLoading={!!errors?.loading}
 						error={errors?.email?.toString()}
 					/>
 					<div className='w-full my-4' />
-					<Input
-						type='password'
+					<PasswordInput
 						name='password'
 						hint='Password'
 						value={form.password}
 						handler={onChange}
+						isLoading={!!errors?.loading}
 						error={errors?.password?.toString()}
 					/>
 					<div className='w-full my-4' />

@@ -30,10 +30,10 @@ const useAxios = () => {
 						localStorage.clear();
 						navigate('/login');
 					}
-					// if (status === 401) {
-					//     localStorage.removeItem('access_token');
-					//     window.location.reload(); // ---> temp commept
-					// }
+					if (status === 401) {
+						localStorage.clear();
+						navigate('/login');
+					}
 					if (status === 429) {
 						localStorage.clear();
 						navigate('/login');

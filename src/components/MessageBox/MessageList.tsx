@@ -1,19 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { WithProfileType } from './MessageBox';
 import MessageLabel from './MessageLabel';
+import useChat from '../../hooks/useChat';
 
 type MessageListProp = {
 	initMessages?: WithProfileType[];
 };
 
-const MessageList = ({ initMessages = [] }: MessageListProp) => {
-	const [messages, setMessages] = useState<WithProfileType[]>(initMessages);
+const MessageList = () => {
+	const {
+		chatState: { conversations },
+	} = useChat();
+	const [messages, setMessages] = useState<WithProfileType[]>([]);
 	const messageEndRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		setMessages(initMessages);
+		if (conversations) setMessages(conversations);
 		return () => setMessages([]);
-	}, [initMessages]);
+	}, [conversations]);
 
 	useEffect(() => {
 		// 👇️ scroll to bottom every time messages change
@@ -25,10 +29,13 @@ const MessageList = ({ initMessages = [] }: MessageListProp) => {
 			{messages.map((message) => (
 				<MessageLabel
 					key={message.id}
-					content={message.message}
-					isMe={message.own}
-					showProfile={message.showProfile}
-					isType={message.onTyping}
+					content={message?.content}
+					isMe={!!message?.own}
+					widgets={!!message?.widgets}
+					timestamp={message?.at || ''}
+					isType={message?.onTyping}
+					isPoped={!!message?.pop}
+					isLoading={typeof message?.id !== 'number'}
 				/>
 			))}
 			<div className='block' ref={messageEndRef}></div>

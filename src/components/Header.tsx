@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
-import { FiLogOut, FiMenu } from 'react-icons/fi';
+import { FiLogOut, FiMenu, FiX } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
+	const [menuOpen, setMenuOpen] = useState(false);
 	const navigate = useNavigate();
+
+	const onMenuOpen = () => setMenuOpen((prev) => !prev);
 
 	const logout = () => {
 		localStorage.clear();
 		navigate('/login', { replace: true });
 	};
+
 	return (
 		<div className='h-14 px-5 flex items-center justify-between'>
 			<h1 className='font-bold text-2xl tracking-wide text-indigo-500'>
@@ -18,8 +22,13 @@ const Header = () => {
 				<button
 					type='button'
 					className='outline-none p-2 rounded-full hover:bg-indigo-100'
+					onClick={onMenuOpen}
 				>
-					<FiMenu className='w-5 h-5 stroke-2 text-gray-600' />
+					{menuOpen ? (
+						<FiX className='w-5 h-5 stroke-2 text-gray-600' />
+					) : (
+						<FiMenu className='w-5 h-5 stroke-2 text-gray-600' />
+					)}
 				</button>
 				<button
 					type='button'

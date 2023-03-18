@@ -1,11 +1,20 @@
 import React from 'react';
 import { FiMoreVertical } from 'react-icons/fi';
+import { AppName } from '../utils';
+import useChat from '../hooks/useChat';
 type PropType = {
+	name?: string;
+	lastMessage?: string;
 	isOnline?: boolean;
 	isKnown?: boolean;
 };
 
-const FriendLabel = ({ isOnline = false, isKnown = false }: PropType) => {
+const FriendLabel = ({
+	name = '',
+	lastMessage = '',
+	isOnline = false,
+	isKnown = false,
+}: PropType) => {
 	return (
 		<div className='px-3 py-2.5 flex items-center hover:bg-indigo-100'>
 			<div
@@ -25,11 +34,11 @@ const FriendLabel = ({ isOnline = false, isKnown = false }: PropType) => {
 			</div>
 			<div className='p-2 flex-1 flex-shrink-0'>
 				<h3 className='font-medium md:font-semibold tracking-wide'>
-					User Name
+					{!name ? AppName : name}
 				</h3>
 				{isKnown ? (
 					<p className='text-sm font-light tracking-wide text-gray-500'>
-						This is my message
+						{lastMessage || ''}
 					</p>
 				) : (
 					<div className='mt-1 flex items-center'>
@@ -55,15 +64,19 @@ const FriendLabel = ({ isOnline = false, isKnown = false }: PropType) => {
 export default FriendLabel;
 
 export const FriendLabelHeader = ({ isOnline = false }: PropType) => {
+	const { chatState } = useChat();
+
 	return (
 		<div className='px-4 py-2 flex items-center justify-between border-b border-indigo-200'>
 			<div className='flex items-center'>
 				<div className='relative w-10 h-10 border border-indigo-200 rounded-full'></div>
 				<div className='p-2 flex-1 flex-shrink-0'>
-					<h3 className='font-semibold tracking-wide'>User Name</h3>
+					<h3 className='font-semibold tracking-wide'>
+						{chatState.bio?.fullname || 'ChatMe'}
+					</h3>
 					{!isOnline ? (
 						<p className='text-sm font-light tracking-wide text-indigo-300'>
-							Offline
+							{!chatState.bio?.fullname ? 'Online' : 'Offline'}
 						</p>
 					) : (
 						<p className='text-sm font-light tracking-wide text-indigo-600'>

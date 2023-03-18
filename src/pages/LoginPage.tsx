@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import Button from '../components/Buttons/Button';
-import Input from '../components/Inputs/Input';
+import Input, { PasswordInput } from '../components/Inputs/Input';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { InputType } from '../types/custom';
 import axios from '../utils/axios';
 import useApp from '../hooks/useApp';
 
 const LoginPage = () => {
-	const { dispatch } = useApp();
+	const { onLogin, dispatch } = useApp();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const from = location.state?.from?.pathname || '/';
@@ -34,7 +34,7 @@ const LoginPage = () => {
 		setErrors({});
 	};
 
-	const onSubmit = async () => {
+	const onSubmit = () => {
 		const { username, password } = form;
 		// check user input
 		if (!username || !password) {
@@ -42,23 +42,28 @@ const LoginPage = () => {
 			return;
 		}
 		setErrors({ loading: true });
-		try {
-			const { data } = await axios.post(`/users/login`, form);
-			dispatch({ type: 'AUTH', payload: data });
-			localStorage.setItem('_token', data?.token);
-			navigate(from, { replace: true });
+		onLogin(form, (err) => {
+			if (err) setErrors(err);
 			setErrors({ loading: false });
-		} catch (error: any) {
-			console.log('error :', error?.response);
-			if (error?.response) {
-				if (error.response?.status && error.response.status === 400) {
-					setErrors(error?.response?.data);
-				}
-			} else {
-				alert('Internal server error');
-				setErrors({ loading: false });
-			}
-		}
+		});
+
+		// try {
+		// 	const { data } = await axios.post(`/users/login`, form);
+		// 	dispatch({ type: 'AUTH', payload: data });
+		// 	localStorage.setItem('_token', data?.token);
+		// 	navigate(from, { replace: true });
+		// 	setErrors({ loading: false });
+		// } catch (error: any) {
+		// 	console.log('error :', error?.response);
+		// 	if (error?.response) {
+		// 		if (error.response?.status && error.response.status === 400) {
+		// 			setErrors(error?.response?.data);
+		// 		}
+		// 	} else {
+		// 		alert('Internal server error');
+		// 		setErrors({ loading: false });
+		// 	}
+		// }
 	};
 
 	return (
@@ -76,11 +81,10 @@ const LoginPage = () => {
 						isLoading={!!errors?.loading}
 					/>
 					<div className='w-full my-4' />
-					<Input
-						type='password'
+					<PasswordInput
 						name='password'
-						value={form.password}
 						hint='Password'
+						value={form.password}
 						handler={onChange}
 						isLoading={!!errors?.loading}
 					/>

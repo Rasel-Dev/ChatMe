@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { FriendLabelHeader } from '../FriendLabel';
 import MessageList from './MessageList';
 import MessageTyper from './MessageTyper';
+import axios from '../../utils/axios';
+import { useParams } from 'react-router-dom';
+import useAxios from '../../hooks/useAxios';
+import useChat from '../../hooks/useChat';
 
 const db = [
 	{ id: 1, message: 'This is my first message on ChatMe', own: false },
@@ -41,66 +45,135 @@ const db = [
 ];
 
 interface MessageType {
-	id: number;
-	message: string;
+	id: number | string;
+	content: string;
 	own: boolean;
+	at?: string;
+	pop?: string;
 }
 
 export interface WithProfileType extends MessageType {
-	showProfile?: boolean;
 	onTyping?: boolean;
+	widgets?: boolean;
 }
 
-type MessageBoxProps = {
-	username: string;
+export type BioType = {
+	fullname: string;
+	profile: string;
+	last_seen: number;
+	is_online: boolean;
+	is_typing: boolean;
 };
-const MessageBox = ({ username }: MessageBoxProps) => {
-	const [messages, setMessages] = useState<WithProfileType[]>([]);
+
+const MessageBox = () => {
+	const { userId } = useParams();
+	const { dispatch } = useChat();
+	const axiosPrivate = useAxios();
 
 	useEffect(() => {
-		// other api calls
-		const prepare = db.map((msg: WithProfileType, index) => {
-			// customize sender message
-			if (!msg.own) {
-				const nextItem = index + 1;
-				// const;
-				const showProfile = !!db[nextItem] ? !!db[nextItem]?.own : !msg?.own;
-				return {
-					...msg,
-					showProfile,
-				};
+		let isMounted = true;
+		const controller = new AbortController();
+
+		(async () => {
+			// loading...
+			try {
+				const res = await axiosPrivate.get(`/chats/${userId}`, {
+					signal: controller.signal,
+				});
+				const resData = res?.data;
+				if (isMounted) {
+					// store data...
+					const conversations = resData?.conversations.map(
+						(msg: WithProfileType, index: number) => {
+							// customize sender message
+							const nextItem = index + 1;
+							if (!msg?.pop) {
+								if (!msg?.own) {
+									// const;
+									if (
+										!!resData?.conversations[nextItem] &&
+										!!resData?.conversations[nextItem]?.pop
+									) {
+										return {
+											...msg,
+											widgets: true,
+										};
+									}
+									return msg;
+								} else {
+									if (!resData?.conversations[nextItem]) {
+										return {
+											...msg,
+											widgets: true,
+										};
+									}
+									return msg;
+								}
+							}
+
+							// return receiver messages
+							return msg;
+						}
+					);
+					console.log('conversations :', conversations);
+					dispatch({ type: 'INIT', payload: { ...resData, conversations } });
+				}
+			} catch (error) {
+				console.log('MessageBox', error);
 			}
-			// return receiver messages
-			return msg;
-		});
-		setMessages(prepare);
-		setTimeout(() => {
-			setMessages((prev) => [
-				...prev,
-				{
-					id: Math.random(),
-					message: 'See your later',
-					own: false,
-					showProfile: true,
-					onTyping: true,
-				},
-			]);
-
-			// setTimeout(() => {
-			// 	scrollToBottom();
-			// }, 600);
-		}, 5000);
-
+		})();
+		// cleanup
 		return () => {
-			setMessages([]);
+			isMounted = false;
+			controller.abort();
+			dispatch({ type: 'CLEAN' });
 		};
-	}, [username]);
+	}, [axiosPrivate, userId]);
+
+	// useEffect(() => {
+	// 	// other api calls
+	// 	const prepare = db.map((msg: WithProfileType, index) => {
+	// 		// customize sender message
+	// 		if (!msg.own) {
+	// 			const nextItem = index + 1;
+	// 			// const;
+	// 			const showProfile = !!db[nextItem] ? !!db[nextItem]?.own : !msg?.own;
+	// 			return {
+	// 				...msg,
+	// 				showProfile,
+	// 			};
+	// 		}
+	// 		// return receiver messages
+	// 		return msg;
+	// 	});
+	// 	setMessages(prepare);
+	// 	setTimeout(() => {
+	// 		setMessages((prev) => [
+	// 			...prev,
+	// 			{
+	// 				id: Math.random(),
+	// 				message: 'See your later',
+	// 				own: false,
+	// 				showProfile: true,
+	// 				onTyping: true,
+	// 			},
+	// 		]);
+
+	// 		// setTimeout(() => {
+	// 		// 	scrollToBottom();
+	// 		// }, 600);
+	// 	}, 5000);
+
+	// 	return () => {
+	// 		setMessages([]);
+	// 	};
+	// }, [username]);
 
 	return (
 		<div className='flex-1 hidden md:flex md:flex-col md:items-stretch'>
 			<FriendLabelHeader />
-			<MessageList initMessages={messages} />
-			<MessageTyper />
+			<MessageList />
+			<MessageTyper chatId={!userId ? 0 : +userId} />
 		</div>
 	);
 };

@@ -13,7 +13,15 @@ const App = () => {
 				<Route path='/login' element={<LoginPage />} />
 				<Route path='/register' element={<RegisterPage />} />
 				<Route
-					path='/:username?'
+					path='/'
+					element={
+						<RequireAuth>
+							<MessagePage />
+						</RequireAuth>
+					}
+				/>
+				<Route
+					path='/f/:userId?'
 					element={
 						<RequireAuth>
 							<MessagePage />
