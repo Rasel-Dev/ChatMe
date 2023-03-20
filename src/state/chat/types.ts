@@ -1,4 +1,5 @@
 import { WithProfileType } from '../../components/MessageBox/MessageBox';
+import { ChatContentType } from '../../types/custom';
 
 export type InitChatStateType = {
 	bio: {
@@ -21,7 +22,12 @@ type ClearChatActionType = {
 };
 type AddMessage = {
 	type: 'APPEND_MESSAGE';
-	payload: { id: number | string; content: string; own: true };
+	payload: {
+		id: number | string;
+		content: string;
+		c_type: ChatContentType;
+		own: true;
+	};
 };
 
 type AddSuccessMessage = {

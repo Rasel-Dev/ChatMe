@@ -11,11 +11,13 @@ const MessageList = () => {
 	const {
 		chatState: { conversations },
 	} = useChat();
+
 	const [messages, setMessages] = useState<WithProfileType[]>([]);
 	const messageEndRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		if (conversations) setMessages(conversations);
+		// console.log('conversations :', conversations);
 		return () => setMessages([]);
 	}, [conversations]);
 
@@ -29,6 +31,7 @@ const MessageList = () => {
 			{messages.map((message) => (
 				<MessageLabel
 					key={message.id}
+					type={message.c_type}
 					content={message?.content}
 					isMe={!!message?.own}
 					widgets={!!message?.widgets}

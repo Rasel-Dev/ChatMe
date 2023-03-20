@@ -6,6 +6,7 @@ import axios from '../../utils/axios';
 import { useParams } from 'react-router-dom';
 import useAxios from '../../hooks/useAxios';
 import useChat from '../../hooks/useChat';
+import { MessageType } from '../../types/custom';
 
 const db = [
 	{ id: 1, message: 'This is my first message on ChatMe', own: false },
@@ -43,14 +44,6 @@ const db = [
 	{ id: 25, message: 'I have to work...', own: false },
 	{ id: 26, message: 'ya sure', own: true },
 ];
-
-interface MessageType {
-	id: number | string;
-	content: string;
-	own: boolean;
-	at?: string;
-	pop?: string;
-}
 
 export interface WithProfileType extends MessageType {
 	onTyping?: boolean;
@@ -115,7 +108,7 @@ const MessageBox = () => {
 							return msg;
 						}
 					);
-					console.log('conversations :', conversations);
+					// console.log('conversations :', conversations);
 					dispatch({ type: 'INIT', payload: { ...resData, conversations } });
 				}
 			} catch (error) {
