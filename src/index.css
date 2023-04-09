@@ -1,8 +1,3 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-.message-label:hover .message-label-menu {
-    display: grid !important;
-    place-items: center;
-}

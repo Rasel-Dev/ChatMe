@@ -1,59 +1,93 @@
-import React from 'react';
-import { FiMoreVertical } from 'react-icons/fi';
+import React, { useCallback, useState } from 'react';
+import {
+	FiCornerDownRight,
+	FiImage,
+	FiMenu,
+	FiMoreVertical,
+} from 'react-icons/fi';
 import { AppName } from '../utils';
-import useChat from '../hooks/useChat';
+import useApp from '../hooks/useApp';
+import { ChatContentType } from '../types/custom';
+import AddRequest from './AddRequest';
+import ParformRequest from './ParformRequest';
+import UserAvater from './UserAvater';
+import { useNavigate } from 'react-router-dom';
 type PropType = {
 	name?: string;
 	lastMessage?: string;
+	messageType?: ChatContentType;
+	avater?: string;
+	isOwnerMessage?: boolean;
+	isSeened?: boolean;
 	isOnline?: boolean;
-	isKnown?: boolean;
+	threadId?: string;
+	userId?: string;
 };
 
 const FriendLabel = ({
 	name = '',
 	lastMessage = '',
+	messageType = ChatContentType.TEXT,
+	avater,
+	isOwnerMessage = false,
+	isSeened = false,
 	isOnline = false,
-	isKnown = false,
+	threadId,
+	userId,
 }: PropType) => {
 	return (
-		<div className='px-3 py-2.5 flex items-center hover:bg-indigo-100'>
-			<div
-				className={`relative flex-shrink-0 w-10 h-10 md:w-14 md:h-14 border ${
-					isOnline ? 'border-indigo-500' : 'border-indigo-200'
-				} rounded-full`}
-			>
-				{!!isKnown && (
+		<div className='px-3 py-2.5 flex items-center hover:bg-indigo-100 transition-colors border-b border-indigo-100'>
+			<div className='relative flex-shrink-0 w-12 h-12 md:w-12 md:h-12 border border-indigo-200 rounded-full'>
+				{threadId || userId ? null : (
 					<>
 						{isOnline ? (
-							<div className='absolute bottom-0.5 -right-0.5 md:bottom-2 md:-right-1 w-3 h-3 bg-indigo-500 rounded-full border border-indigo-200'></div>
+							<div className='absolute bottom-0.5 -right-0.5 md:bottom-2 md:-right-1 w-3 h-3 bg-green-400 rounded-full border-[1.5px] border-white'></div>
 						) : (
-							<div className='absolute bottom-0.5 -right-0.5 md:bottom-2 md:-right-1 w-3 h-3 bg-indigo-200 rounded-full border border-indigo-200'></div>
+							<div className='absolute bottom-0.5 -right-0.5 md:bottom-2 md:-right-1 w-3 h-3 bg-indigo-200 rounded-full'></div>
 						)}
 					</>
 				)}
+				<UserAvater avater={avater} />
 			</div>
 			<div className='p-2 flex-1 flex-shrink-0'>
-				<h3 className='font-medium md:font-semibold tracking-wide'>
+				<h3 className='font-medium tracking-wide text-slate-600'>
 					{!name ? AppName : name}
 				</h3>
-				{isKnown ? (
-					<p className='text-sm font-light tracking-wide text-gray-500'>
-						{lastMessage || ''}
-					</p>
-				) : (
+				{threadId || userId ? null : (
+					<div className={`mt-0.5 flex items-center text-xs tracking-wide`}>
+						{!isOwnerMessage || lastMessage === 'removed' ? null : (
+							<FiCornerDownRight className='w-3 h-3 stroke-2' />
+						)}
+
+						{!lastMessage ? (
+							<p className='px-2 py-0.5 bg-indigo-200 rounded-full font-normal text-[10px] text-indigo-600'>
+								New
+							</p>
+						) : (
+							<>
+								{lastMessage === 'removed' ? (
+									<p className='ml-1 flex-1 italic'>You remove message</p>
+								) : (
+									<p className='ml-1 flex-1'>
+										{messageType === ChatContentType.IMG ? (
+											<FiImage className='w-4 h-4' />
+										) : (
+											lastMessage
+										)}
+									</p>
+								)}
+							</>
+						)}
+
+						{!isOwnerMessage && lastMessage ? (
+							<span className='ml-1 w-2 h-2 rounded-full bg-indigo-300' />
+						) : null}
+					</div>
+				)}
+				{!threadId ? null : <ParformRequest threadId={threadId} />}
+				{!userId ? null : (
 					<div className='mt-1 flex items-center'>
-						<button
-							type='button'
-							className='px-2 py-0.5 bg-indigo-500 tracking-wide text-white font-medium rounded-full text-xs'
-						>
-							Accept
-						</button>
-						<button
-							type='button'
-							className='ml-1 px-2 py-0.5 bg-transparent text-indigo-500 tracking-wide font-medium rounded-full text-xs hover:bg-indigo-200'
-						>
-							Cancel
-						</button>
+						<AddRequest userId={userId} />
 					</div>
 				)}
 			</div>
@@ -64,19 +98,39 @@ const FriendLabel = ({
 export default FriendLabel;
 
 export const FriendLabelHeader = ({ isOnline = false }: PropType) => {
-	const { chatState } = useChat();
+	const {
+		state: { chat },
+		dispatch,
+	} = useApp();
+
+	const navigate = useNavigate();
+
+	const toggleMenu = () => {
+		dispatch({ type: 'TOGGLE_LIST' });
+		navigate('/');
+	};
 
 	return (
 		<div className='px-4 py-2 flex items-center justify-between border-b border-indigo-200'>
 			<div className='flex items-center'>
-				<div className='relative w-10 h-10 border border-indigo-200 rounded-full'></div>
+				<button
+					type='button'
+					className='outline-none p-2 mr-3 inline-block md:hidden rounded-full hover:bg-indigo-100'
+					onClick={toggleMenu}
+					title='Message'
+				>
+					<FiMenu className='w-6 h-6 stroke-1 text-gray-600' />
+				</button>
+				<div className='relative w-10 h-10 border border-indigo-200 rounded-full'>
+					<UserAvater avater={chat?.bio?.avater} />
+				</div>
 				<div className='p-2 flex-1 flex-shrink-0'>
-					<h3 className='font-semibold tracking-wide'>
-						{chatState.bio?.fullname || 'ChatMe'}
+					<h3 className='font-semibold tracking-wide text-slate-600'>
+						{chat?.bio?.name || 'ChatMe'}
 					</h3>
 					{!isOnline ? (
 						<p className='text-sm font-light tracking-wide text-indigo-300'>
-							{!chatState.bio?.fullname ? 'Online' : 'Offline'}
+							{!chat?.bio?.name ? 'Online' : 'Offline'}
 						</p>
 					) : (
 						<p className='text-sm font-light tracking-wide text-indigo-600'>
@@ -88,6 +142,7 @@ export const FriendLabelHeader = ({ isOnline = false }: PropType) => {
 			<button
 				type='button'
 				className='outline-none p-2 rounded-full hover:bg-indigo-100'
+				title='User Menu'
 			>
 				<FiMoreVertical className='w-5 h-5 stroke-2 text-gray-600' />
 			</button>

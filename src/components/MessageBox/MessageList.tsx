@@ -1,47 +1,91 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { WithProfileType } from './MessageBox';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import MessageLabel from './MessageLabel';
-import useChat from '../../hooks/useChat';
+import useApp from '../../hooks/useApp';
+import { WithProfileType } from '../../types/custom';
+import ScrollToBottom from './ScrollToBottom';
+import { useParams } from 'react-router-dom';
 
-type MessageListProp = {
-	initMessages?: WithProfileType[];
+type PropType = {
+	messages: WithProfileType[];
 };
 
-const MessageList = () => {
-	const {
-		chatState: { conversations },
-	} = useChat();
-
-	const [messages, setMessages] = useState<WithProfileType[]>([]);
+const MessageList: React.FC<PropType> = ({ messages = [] }) => {
+	// const {
+	// 	state: { chat },
+	// } = useApp();
+	const { chatId } = useParams();
+	const [isAnimated, setAnimated] = useState(false);
+	// const [messages, setMessages] = useState<WithProfileType[]>([]);
 	const messageEndRef = useRef<HTMLDivElement>(null);
 
-	useEffect(() => {
-		if (conversations) setMessages(conversations);
-		// console.log('conversations :', conversations);
-		return () => setMessages([]);
-	}, [conversations]);
+	// useEffect(() => {
+	// 	if (chat?.conversations) setMessages(chat?.conversations);
+	// 	// console.log('conversations :', conversations);
+	// 	return () => setMessages([]);
+	// }, [chat?.conversations]);
 
+	const scrollToBottom = useCallback(
+		(behavior: 'instant' | 'smooth' = 'instant') => {
+			messageEndRef.current?.scrollIntoView({ behavior });
+		},
+		[]
+	);
 	useEffect(() => {
-		// 👇️ scroll to bottom every time messages change
-		messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-	}, [messages]);
+		window.addEventListener('scroll', () => {
+			console.log('window.scrollY  :', window.scrollY);
+		});
+	}, []);
+
+	// const scrollToBottom = useCallback(
+	// 	(behavior: 'instant' | 'smooth' = 'instant') => {
+	// 		window.scrollTo({
+	// 			top: messageEndRef.current?.offsetTop,
+	// 			behavior,
+	// 		});
+	// 		console.log(
+	// 			'messageEndRef.current?.offsetTop :',
+	// 			messageEndRef.current?.offsetTop
+	// 		);
+	// 	},
+	// 	[chat?.conversations]
+	// );
+	// console.log('chat?.conversations :', chat?.conversations);
+
+	// useEffect(() => {
+	// 	// 👇️ scroll to bottom every time messages change
+	// 	scrollToBottom('smooth');
+	// }, [messages]);
+
+	// useEffect(() => {
+	// 	setTimeout(() => {
+	// 		if (messageEndRef.current) {
+	// 			messageEndRef.current.scrollIntoView({
+	// 				behavior: 'smooth',
+	// 				block: 'end',
+	// 				inline: 'nearest',
+	// 			});
+	// 		}
+	// 	}, 100);
+	// }, [messages]);
 
 	return (
-		<div className='px-3 pt-3 flex-1 overflow-y-auto'>
+		<div className='p-3 flex-1 overflow-y-auto'>
 			{messages.map((message) => (
 				<MessageLabel
 					key={message.id}
-					type={message.c_type}
-					content={message?.content}
+					id={message?.id || ''}
+					threadId={chatId || ''}
+					type={message?.cType}
+					content={message?.body}
 					isMe={!!message?.own}
 					widgets={!!message?.widgets}
-					timestamp={message?.at || ''}
+					timestamp={message?.createdAt || ''}
 					isType={message?.onTyping}
 					isPoped={!!message?.pop}
-					isLoading={typeof message?.id !== 'number'}
+					isLoading={typeof message?.id !== 'string'}
 				/>
 			))}
-			<div className='block' ref={messageEndRef}></div>
+			<ScrollToBottom animated={!!messages.length} />
 		</div>
 	);
 };

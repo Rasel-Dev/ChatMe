@@ -5,7 +5,9 @@ type LayoutProp = {
 };
 
 const Layouts = ({ children }: LayoutProp) => {
-	return <div className='h-full bg-indigo-50'>{children}</div>;
+	return (
+		<div className='relative min-h-full md:flex bg-indigo-50'>{children}</div>
+	);
 };
 
 export default Layouts;

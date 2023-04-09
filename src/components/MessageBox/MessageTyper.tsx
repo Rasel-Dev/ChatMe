@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { FiImage, FiSend, FiX } from 'react-icons/fi';
 import useAxios from '../../hooks/useAxios';
-import useChat from '../../hooks/useChat';
-import { ChatContentType, InputType } from '../../types/custom';
+import { ChatContentType, InputType, SenderType } from '../../types/custom';
+import useApp from '../../hooks/useApp';
+import socketInstance from '../../utils/socket';
 
-type PropTypes = { chatId?: number };
+type PropTypes = { chatId?: string };
 
 const MessageTyper: React.FC<PropTypes> = ({ chatId }) => {
-	const { dispatch } = useChat();
+	const { dispatch } = useApp();
 	const axiosPrivate = useAxios();
 	const [text, setText] = useState('');
 	const [file, setFile] = useState<File>();
@@ -26,7 +27,7 @@ const MessageTyper: React.FC<PropTypes> = ({ chatId }) => {
 		setPreview(null);
 	};
 
-	const onSend = async () => {
+	const onSend = () => {
 		if (!chatId) {
 			alert('Something went wrong !');
 			return;
@@ -35,63 +36,82 @@ const MessageTyper: React.FC<PropTypes> = ({ chatId }) => {
 			alert('Empty message !');
 			return;
 		}
-		const temp = uuid();
-		const message = text;
-		const f = file;
-		const p = preview;
+		const textTmpId = Math.floor(new Date().valueOf() * Math.random());
+		const fileTmpId = Math.floor(new Date().valueOf() * Math.random());
 
-		if (message)
+		if (text) {
 			dispatch({
 				type: 'APPEND_MESSAGE',
 				payload: {
-					id: temp,
-					content: text,
-					c_type: ChatContentType.TEXT,
+					threadId: chatId,
+					id: textTmpId,
+					body: text,
+					cType: ChatContentType.TEXT,
 					own: true,
 				},
 			});
-		if (f && p) {
+			socketInstance.emit('send:message', chatId, text, (status: any) => {
+				if (status?.success) {
+					dispatch({
+						type: 'APPEAR_MESSAGE_SUCCESS',
+						payload: {
+							temp: textTmpId,
+							replace: status?.success,
+						},
+					});
+					dispatch({
+						type: 'APPEND_LABEL_MESSAGE',
+						payload: {
+							threadId: chatId,
+							id: status?.success,
+							body: text,
+							cType: ChatContentType.TEXT,
+							own: true,
+						},
+					});
+				}
+			});
+		}
+		if (file && preview) {
 			dispatch({
 				type: 'APPEND_MESSAGE',
 				payload: {
-					id: temp,
-					content: preview,
-					c_type: ChatContentType.IMG,
+					threadId: chatId,
+					id: fileTmpId,
+					body: preview,
+					cType: ChatContentType.IMG,
 					own: true,
 				},
+			});
+			socketInstance.emit('send:image', chatId, file, (status: any) => {
+				if (status?.success) {
+					dispatch({
+						type: 'APPEAR_MESSAGE_SUCCESS',
+						payload: {
+							temp: fileTmpId,
+							replace: status?.success,
+						},
+					});
+					dispatch({
+						type: 'APPEND_LABEL_MESSAGE',
+						payload: {
+							threadId: chatId,
+							id: status?.success,
+							body: '',
+							cType: ChatContentType.IMG,
+							own: true,
+						},
+					});
+				}
 			});
 		}
 
 		setText('');
 		onRemoveFile();
-
-		try {
-			const res = await axiosPrivate.post(
-				`/chats`,
-				{
-					cid: +chatId,
-					message,
-					file: f,
-				},
-				{
-					headers: {
-						'content-type': file!.type,
-						'content-length': `${file!.size}`,
-					},
-				}
-			);
-			const resData = res?.data;
-			dispatch({
-				type: 'APPEND_MESSAGE_SUCCESS',
-				payload: { temp, replace: +resData?.remainer },
-			});
-		} catch (error) {
-			console.log('MessageTyper', error);
-		}
 	};
 
 	return (
-		<div className='w-full'>
+		<div className='w-full bg-indigo-50'>
 			{!file || !preview ? null : (
 				<div className='flex p-3 bg-indigo-100'>
 					<div className='relative border border-indigo-300 rounded-lg'>
@@ -121,6 +141,7 @@ const MessageTyper: React.FC<PropTypes> = ({ chatId }) => {
 						className='hidden'
 						id='file-attach'
 						onChange={handleChange}
+						title='File Upload'
 					/>
 				</label>
 				<input
@@ -137,6 +158,7 @@ const MessageTyper: React.FC<PropTypes> = ({ chatId }) => {
 					type='button'
 					className='outline-none pl-4 pr-5 bg-transparent'
 					onClick={onSend}
+					title='Send'
 					disabled={!text.length && !file}
 				>
 					<FiSend

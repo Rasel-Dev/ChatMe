@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiLogOut, FiMenu, FiX } from 'react-icons/fi';
+import { FiLogOut, FiSettings, FiX } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
@@ -14,7 +14,7 @@ const Header = () => {
 	};
 
 	return (
-		<div className='h-14 px-5 flex items-center justify-between'>
+		<div className='px-5 pt-4 flex items-center justify-between'>
 			<h1 className='font-bold text-2xl tracking-wide text-indigo-500'>
 				Chat.Me
 			</h1>
@@ -23,17 +23,19 @@ const Header = () => {
 					type='button'
 					className='outline-none p-2 rounded-full hover:bg-indigo-100'
 					onClick={onMenuOpen}
+					title='Settings'
 				>
 					{menuOpen ? (
 						<FiX className='w-5 h-5 stroke-2 text-gray-600' />
 					) : (
-						<FiMenu className='w-5 h-5 stroke-2 text-gray-600' />
+						<FiSettings className='w-5 h-5 stroke-2 text-gray-600' />
 					)}
 				</button>
 				<button
 					type='button'
 					className='ml-2 outline-none p-2 rounded-full hover:bg-indigo-100'
 					onClick={logout}
+					title='Logout'
 				>
 					<FiLogOut className='w-5 h-5 stroke-2 text-gray-600' />
 				</button>

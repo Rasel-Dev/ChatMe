@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import Button from '../components/Buttons/Button';
-import Input, { PasswordInput } from '../components/Inputs/Input';
+import Button from '../../components/Buttons/Button';
+import Input, { PasswordInput } from '../../components/Inputs/Input';
 import { useLocation, useNavigate } from 'react-router-dom';
-import useApp from '../hooks/useApp';
-import { InputType } from '../types/custom';
-import axios from '../utils/axios';
+import useApp from '../../hooks/useApp';
+import { InputType } from '../../types/custom';
+import axios from '../../utils/axios';
+import { FiPlus } from 'react-icons/fi';
 
 const RegisterPage = () => {
 	const { dispatch } = useApp();
@@ -12,6 +13,8 @@ const RegisterPage = () => {
 	const location = useLocation();
 	const from = location.state?.from?.pathname || '/';
 
+	const [avater, setAvater] = useState<File>();
+	const [preview, setPreview] = useState<string | null>(null);
 	const [form, setForm] = useState({
 		fullname: '',
 		username: '',
@@ -35,6 +38,13 @@ const RegisterPage = () => {
 		// clear error state
 		setErrors({});
 	};
+
+	function onChangeProfile(e: InputType) {
+		if (e.target.files && e.target.files[0]) {
+			setAvater(e.target.files[0]);
+			setPreview(URL.createObjectURL(e.target.files[0]));
+		}
+	}
 
 	const isValid = () => {
 		const { fullname, username, email, password } = form;
@@ -63,7 +73,15 @@ const RegisterPage = () => {
 		if (isValid()) {
 			setErrors({ loading: true });
 			try {
-				const { data } = await axios.post(`/users/new`, form);
+				const { data } = await axios.post(
+					`/users/signup`,
+					{ ...form, avater },
+					{
+						headers: {
+							'content-type': 'multipart/form-data',
+						},
+					}
+				);
 				dispatch({ type: 'AUTH', payload: data });
 				localStorage.setItem('_token', data?.token);
 				navigate(from, { replace: true });
@@ -90,7 +108,29 @@ const RegisterPage = () => {
 				<h1 className='text-center font-bold text-indigo-500 text-4xl tracking-wide'>
 					ChatMe
 				</h1>
-				<div className='mt-8'>
+				<div className='mt-4 flex flex-col gap-4'>
+					<div className='grid place-content-center'>
+						<label
+							htmlFor='profile-avater'
+							className='grid place-content-center cursor-pointer'
+						>
+							<div className='relative w-24 h-24 border border-indigo-200 rounded-full'>
+								<FiPlus className='absolute bottom-1 right-1 bg-indigo-300 text-white w-4 h-4 rounded-full overflow-hidden' />
+								<img
+									src={preview || '/avater.png'}
+									alt='avater'
+									className='w-full object-cover h-full rounded-full'
+								/>
+							</div>
+						</label>
+						<input
+							type='file'
+							className='hidden'
+							id='profile-avater'
+							onChange={onChangeProfile}
+						/>
+					</div>
+
 					<Input
 						name='fullname'
 						hint='Fullname'
@@ -99,7 +139,7 @@ const RegisterPage = () => {
 						isLoading={!!errors?.loading}
 						error={errors?.fullname?.toString()}
 					/>
-					<div className='w-full my-4' />
+
 					<Input
 						name='username'
 						hint='Username'
@@ -108,7 +148,7 @@ const RegisterPage = () => {
 						isLoading={!!errors?.loading}
 						error={errors?.username?.toString()}
 					/>
-					<div className='w-full my-4' />
+
 					<Input
 						type='email'
 						name='email'
@@ -118,7 +158,7 @@ const RegisterPage = () => {
 						isLoading={!!errors?.loading}
 						error={errors?.email?.toString()}
 					/>
-					<div className='w-full my-4' />
+
 					<PasswordInput
 						name='password'
 						hint='Password'
@@ -127,7 +167,7 @@ const RegisterPage = () => {
 						isLoading={!!errors?.loading}
 						error={errors?.password?.toString()}
 					/>
-					<div className='w-full my-4' />
+
 					<div className='flex items-center justify-end'>
 						<Button title='Login Account' transparent handler={gotoLogin} />
 						<div className='px-1' />
