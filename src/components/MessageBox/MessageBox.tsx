@@ -2,13 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { FriendLabelHeader } from '../FriendLabel';
 import MessageTyper from './MessageTyper';
 import useAxios from '../../hooks/useAxios';
-import { MessageType } from '../../types/custom';
-import MessageLabel from './MessageLabel';
 import useApp from '../../hooks/useApp';
-import Typing from '../Typing';
 import MessageList from './MessageList';
-import socketInstance from '../../utils/socket';
-import BodyLayout from '../Layouts/BodyLayout';
+import BodyLayout from '../layouts/BodyLayout';
+import PopupBox from '../PopupBox';
+import ReactionWindow from '../ReactionWindow';
 
 const MessageBox = ({ chatId = '' }: { chatId: string }) => {
 	const {
@@ -44,6 +42,29 @@ const MessageBox = ({ chatId = '' }: { chatId: string }) => {
 					dispatch({
 						type: 'TOGGLE_LIST',
 					});
+					// setTimeout(() => {
+					// 	console.log('Before');
+
+					// 	dispatch({
+					// 		type: 'TOGGLE_TYPING',
+					// 		payload: {
+					// 			threadId: '05829122-8022-4bc2-9441-de82a285ee35',
+					// 			userId: '249888fd-e1f2-4681-9682-badc622b4a38',
+					// 			isTyping: true,
+					// 		},
+					// 	});
+					// 	setTimeout(() => {
+					// 		dispatch({
+					// 			type: 'TOGGLE_TYPING',
+					// 			payload: {
+					// 				threadId: '05829122-8022-4bc2-9441-de82a285ee35',
+					// 				userId: '249888fd-e1f2-4681-9682-badc622b4a38',
+					// 				isTyping: false,
+					// 			},
+					// 		});
+					// 	}, 10000);
+					// 	console.log('After');
+					// }, 5000);
 					// socketInstance.on('message', (messageContent: any) => {
 					// 	console.log('messageContent :', messageContent);
 					// 	// dispatch({
@@ -95,24 +116,9 @@ const MessageBox = ({ chatId = '' }: { chatId: string }) => {
 	return (
 		<BodyLayout>
 			<FriendLabelHeader />
-			{/* <ul className='px-3 pt-3 flex-1 overflow-y-auto'>
-				{chat?.conversations?.map((message) => (
-					<MessageLabel
-						key={message.id}
-						type={message?.cType}
-						content={message?.body}
-						isMe={!!message?.own}
-						widgets={!!message?.widgets}
-						timestamp={message?.createdAt || ''}
-						isType={message?.onTyping}
-						isPoped={!!message?.pop}
-						isLoading={typeof message?.id !== 'string'}
-					/>
-				))}
-				<div className='w-full block' ref={messageEndRef} />
-			</ul> */}
 			<MessageList messages={chat?.conversations || []} />
 			<MessageTyper chatId={!chatId ? '' : chatId} />
+			{chat?.activeRoom && chat?.onMessageReactor && <ReactionWindow />}
 		</BodyLayout>
 	);
 };

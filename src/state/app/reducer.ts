@@ -11,11 +11,20 @@ export default function appReducer(
 ): initialStateType {
 	switch (action.type) {
 		case 'AUTH': {
-			return { ...state, ...action.payload };
+			return {
+				...state,
+				auth: action.payload?.id,
+				token: action.payload?.token,
+			};
+		}
+		case 'UNAUTH': {
+			localStorage.clear();
+			return initialAppState;
 		}
 		case 'INIT_FRIEND': {
 			return {
 				...state,
+				auth: action.payload?.id || '',
 				userAvater: action.payload?.avater || '',
 				requested: action.payload?.requested || 0,
 				friends: action.payload?.friends || [],
@@ -81,13 +90,76 @@ export default function appReducer(
 					...state.chat,
 					activeRoom: action.payload.threadId,
 					bio: action.payload?.bio,
+					participants: action.payload.participants || [],
 					conversations: serializeConversations(action.payload?.conversations),
 				},
 			};
 		}
-		case 'APPEND_LABEL_MESSAGE': {
-			let friends = [...state.friends];
+		case 'SET_MESSAGE_REACTOR': {
+			const { messageId } = action.payload;
+			const setOrNot = messageId && state.chat.onMessageReactor !== messageId;
+			return {
+				...state,
+				chat: {
+					...state.chat,
+					onMessageReactor: setOrNot ? messageId : '',
+				},
+			};
+		}
+		case 'TOGGLE_TYPING': {
+			const { threadId, userId, isTyping } = action.payload;
+			const friends = [...state.friends];
 
+			/**
+			 * Friend Label
+			 */
+			const friendIdx = friends.findIndex((f) => f.threadId === threadId);
+			if (friendIdx !== -1) friends[friendIdx].typing = isTyping;
+			/**
+			 * Chat Inbox
+			 */
+			if (state.chat.activeRoom === threadId) {
+				const conversations = isTyping
+					? [...state.chat.conversations]
+					: [
+							...state.chat.conversations.filter(
+								(f) => f.userId === userId && !f?.onTyping
+							),
+					  ];
+				const alreadyTyping =
+					conversations.findIndex(
+						(f) => f.userId === userId && !!f.onTyping
+					) === -1;
+				if (
+					!!conversations.length &&
+					!conversations[conversations.length - 1].own &&
+					alreadyTyping
+				)
+					conversations[conversations.length - 1].widgets = !isTyping;
+				if (isTyping && alreadyTyping) {
+					conversations.push({
+						id: uuid(),
+						body: '',
+						userId,
+						widgets: true,
+						onTyping: true,
+					});
+				}
+
+				return {
+					...state,
+					friends,
+					chat: {
+						...state.chat,
+						conversations,
+					},
+				};
+			}
+
+			return { ...state, friends };
+		}
+		case 'APPEND_LABEL_MESSAGE': {
+			const friends = [...state.friends];
 			// for friends label data
 			const friendIdx = friends.findIndex(
 				(x) => x.threadId === action.payload?.threadId
@@ -131,7 +203,6 @@ export default function appReducer(
 			const conversations = [...state.chat.conversations];
 			const loadIds = [...state.chat.loadIds];
 			const body = { ...action.payload };
-			console.log('body :', body);
 			delete body?.threadId;
 			if (state.chat.activeRoom === action.payload?.threadId) {
 				const convLen = conversations.length;
@@ -187,7 +258,7 @@ export default function appReducer(
 			const clone = [...state.chat.conversations];
 			const index = clone.findIndex((c) => c.id === action.payload.id);
 			if (index !== -1 && state.chat.activeRoom) {
-				if (action.payload.body) {
+				if (typeof action.payload?.body === 'string') {
 					clone[index].body = action.payload.body;
 					//remove with friend label message
 					if (index === clone.length - 1) {
@@ -197,7 +268,7 @@ export default function appReducer(
 						);
 
 						if (fIndex !== -1) {
-							fClone[fIndex].body = 'removed';
+							fClone[fIndex].body = '';
 							return {
 								...state,
 								friends: fClone,

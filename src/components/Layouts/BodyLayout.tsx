@@ -6,7 +6,7 @@ type LayoutProp = {
 
 const BodyLayout = ({ children }: LayoutProp) => {
 	return (
-		<div className='flex-1 max-h-screen flex flex-col relative'>{children}</div>
+		<div className='flex-1 min-h-screen flex flex-col relative'>{children}</div>
 	);
 };
 

@@ -1,26 +1,35 @@
 import React, { useState } from 'react';
-import { v4 as uuid } from 'uuid';
 import { FiImage, FiSend, FiX } from 'react-icons/fi';
-import useAxios from '../../hooks/useAxios';
-import { ChatContentType, InputType, SenderType } from '../../types/custom';
+import { ChatContentType, InputType } from '../../types/custom';
 import useApp from '../../hooks/useApp';
 import socketInstance from '../../utils/socket';
 
 type PropTypes = { chatId?: string };
 
+let timeout: any;
+
 const MessageTyper: React.FC<PropTypes> = ({ chatId }) => {
 	const { dispatch } = useApp();
-	const axiosPrivate = useAxios();
 	const [text, setText] = useState('');
 	const [file, setFile] = useState<File>();
 	const [preview, setPreview] = useState<string | null>(null);
 
-	function handleChange(e: InputType) {
+	const onTyping = (e: InputType) => {
+		socketInstance.emit('trigger:typing', chatId, true);
+		setText(e.target.value);
+		clearTimeout(timeout);
+		timeout = setTimeout(
+			() => socketInstance.emit('trigger:typing', chatId, false),
+			2000
+		);
+	};
+
+	const handleChange = (e: InputType) => {
 		if (e.target.files) {
 			setFile(e.target.files[0]);
 			setPreview(URL.createObjectURL(e.target.files[0]));
 		}
-	}
+	};
 
 	const onRemoveFile = () => {
 		setFile(undefined);
@@ -149,7 +158,7 @@ const MessageTyper: React.FC<PropTypes> = ({ chatId }) => {
 					name='message'
 					className='bg-transparent w-full outline-none pl-2 pr-4'
 					value={text || ''}
-					onChange={(e) => setText(e.target.value)}
+					onChange={onTyping}
 					autoComplete='off'
 					placeholder='Your messsage ...'
 					disabled={!chatId}

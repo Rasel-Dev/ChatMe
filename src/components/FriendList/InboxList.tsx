@@ -30,8 +30,10 @@ const InboxList = () => {
 							avater={friend?.user?.avater}
 							lastMessage={friend?.body}
 							messageType={friend?.cType}
+							isNew={typeof friend?.body !== 'string'}
 							isOwnerMessage={!!friend?.own}
 							isOnline={!!friend?.online}
+							isTyping={!!friend?.typing}
 						/>
 					</NavLink>
 				</React.Fragment>

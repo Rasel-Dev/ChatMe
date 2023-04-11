@@ -1,5 +1,5 @@
 import React from 'react';
-import EmptyMessageBox from '../../components/MessageBox/EmptyMessageBox';
+import EmptyMessageBox from '../../components/messageBox/EmptyMessageBox';
 
 const MessageDashboard = () => {
 	return <EmptyMessageBox />;

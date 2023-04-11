@@ -8,6 +8,7 @@ type InputProp = {
 	hint?: string;
 	value?: string;
 	isLoading?: boolean;
+	showLabel?: boolean;
 	error?: string;
 };
 const Input = ({
@@ -17,10 +18,19 @@ const Input = ({
 	hint = '',
 	value,
 	isLoading = false,
+	showLabel = false,
 	error = '',
 }: InputProp) => {
 	return (
 		<div className='bg-transparent'>
+			{showLabel && (
+				<label
+					htmlFor={name}
+					className='capitalize font-semibold text-sm ml-3 text-slate-600'
+				>
+					{hint}
+				</label>
+			)}
 			<input
 				type={type}
 				name={name}

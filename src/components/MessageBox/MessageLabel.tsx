@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChatContentType } from '../../types/custom';
+import { ChatContentType, ReactType } from '../../types/custom';
 import LeftLabel from './labels/LeftLabel';
 import RightLabel from './labels/RightLabel';
 
@@ -11,6 +11,7 @@ type MessageLebelType = {
 	isMe?: boolean;
 	widgets?: boolean;
 	timestamp?: string;
+	react: ReactType[];
 	isReceiverSeened?: boolean;
 	isType?: boolean;
 	isPoped?: boolean;
@@ -26,6 +27,7 @@ const MessageLabel = ({
 	widgets = false,
 	isReceiverSeened = true,
 	isType = false,
+	react,
 	timestamp = '',
 	isPoped = false,
 	isLoading = false,
@@ -45,6 +47,7 @@ const MessageLabel = ({
 			threadId={threadId}
 			type={type}
 			content={content}
+			react={react}
 			enableWidgets={widgets}
 			isSeened={isReceiverSeened}
 			isType={isType}
@@ -56,6 +59,7 @@ const MessageLabel = ({
 			threadId={threadId}
 			content={content}
 			type={type}
+			react={react}
 			isLoading={isLoading}
 			enableWidgets={widgets}
 			isSeened={isReceiverSeened}

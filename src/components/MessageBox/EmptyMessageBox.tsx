@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import MessageList from './MessageList';
-import BodyLayout from '../Layouts/BodyLayout';
+import BodyLayout from '../layouts/BodyLayout';
 
 const EmptyMessageBox = () => {
 	return (

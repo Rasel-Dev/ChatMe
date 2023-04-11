@@ -1,7 +1,7 @@
 import React from 'react';
 import { FiTrash, FiTrash2 } from 'react-icons/fi';
-import socketInstance from '../../utils/socket';
-import useApp from '../../hooks/useApp';
+import socketInstance from '../../../utils/socket';
+import useApp from '../../../hooks/useApp';
 
 type PropType = {
 	id: any;
@@ -28,7 +28,7 @@ const Delete: React.FC<PropType> = ({
 						type: 'REMOVE_MESSAGE',
 						payload: {
 							id,
-							body: 'removed',
+							body: '',
 						},
 					});
 				}
@@ -38,7 +38,7 @@ const Delete: React.FC<PropType> = ({
 
 	return (
 		<div
-			className={`absolute bottom-7 ${
+			className={`absolute -top-[52px] ${
 				!canRemoveEveryone ? 'left-3' : 'right-3'
 			} flex flex-col text-[10px] gap-1`}
 		>

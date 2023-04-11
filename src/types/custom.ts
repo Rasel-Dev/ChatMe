@@ -14,8 +14,9 @@ export enum ChatContentType {
 }
 export interface LabelProfileType {
 	threadId: string;
-	userId?: string;
 	user: { fullname: string; avater?: string };
+	userId?: string;
+	typing?: boolean;
 }
 export interface FriendType extends LabelProfileType {
 	id: string;
@@ -42,6 +43,16 @@ export interface MessageType {
 	at?: string;
 	pop?: boolean;
 }
+export enum ReactStatusType {
+	LOVE = 'love',
+	LIKE = 'like',
+	UNLIKE = 'unlike',
+	SAD = 'sad',
+}
+export type ReactType = {
+	userId: string;
+	cReact: ReactStatusType;
+};
 export interface MessageContentType {
 	body: string;
 	id?: string | number;
@@ -50,24 +61,24 @@ export interface MessageContentType {
 	own?: boolean;
 	pop?: boolean;
 	threadId?: string;
+	userId?: string;
 }
 export interface WithProfileType extends MessageContentType {
 	onTyping?: boolean;
 	widgets?: boolean;
+	React?: ReactType[];
 }
+export type ParticipantType = {
+	id: string;
+	fullname: string;
+	avater: string;
+};
 export type BioType = {
 	name: string;
 	avater: string;
 	lastRead: string;
 	is_online?: boolean;
 	is_typing?: boolean;
-};
-export type UserProfileType = {
-	fullname: string;
-	username: string;
-	email: string;
-	avater: string;
-	createdAt: string;
 };
 export type ReturnSocketSubscribeType = {
 	userId: string;

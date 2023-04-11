@@ -1,19 +1,23 @@
-import React from 'react';
-import Layouts from './components/Layouts';
+import React, { useState } from 'react';
+import Layout from './components/layouts/Layout';
 import { Routes, Route } from 'react-router-dom';
 import MessagePage from './pages/message/MessagePage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import RequireAuth from './utils/RequireAuth';
 import MessageDashboard from './pages/message/MessageDashboard';
-import FriendList from './components/FriendList';
+import FriendList from './components/friendList/FriendList';
 import ProfilePage from './pages/profile/ProfilePage';
+import useApp from './hooks/useApp';
 
 const App = () => {
-	const token = localStorage.getItem('_token');
+	const {
+		state: { auth },
+	} = useApp();
+
 	return (
-		<Layouts>
-			{!token ? null : <FriendList />}
+		<Layout>
+			{!auth ? null : <FriendList />}
 			<Routes>
 				<Route path='/login' element={<LoginPage />} />
 				<Route path='/register' element={<RegisterPage />} />
@@ -42,7 +46,7 @@ const App = () => {
 					}
 				/>
 			</Routes>
-		</Layouts>
+		</Layout>
 	);
 };
 

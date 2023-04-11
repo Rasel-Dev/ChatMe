@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import Button from '../../components/Buttons/Button';
-import Input, { PasswordInput } from '../../components/Inputs/Input';
+import Button from '../../components/buttons/Button';
+import Input, { PasswordInput } from '../../components/inputs/Input';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useApp from '../../hooks/useApp';
 import { InputType } from '../../types/custom';

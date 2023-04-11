@@ -12,29 +12,53 @@ import AddRequest from './AddRequest';
 import ParformRequest from './ParformRequest';
 import UserAvater from './UserAvater';
 import { useNavigate } from 'react-router-dom';
+import Typing from './Typing';
+
 type PropType = {
 	name?: string;
 	lastMessage?: string;
 	messageType?: ChatContentType;
 	avater?: string;
+	isNew?: boolean;
 	isOwnerMessage?: boolean;
 	isSeened?: boolean;
 	isOnline?: boolean;
+	isTyping?: boolean;
 	threadId?: string;
 	userId?: string;
 };
 
-const FriendLabel = ({
+const MessageContainer: React.FC<PropType> = ({
+	lastMessage,
+	messageType,
+	isTyping,
+}) => {
+	if (isTyping) return <Typing />;
+
+	if (lastMessage === '') return <p className='italic'>You remove message</p>;
+
+	if (messageType === ChatContentType.IMG)
+		return <FiImage className='w-4 h-4' />;
+
+	if (messageType === ChatContentType.URI)
+		return <FiImage className='w-4 h-4' />;
+
+	return <p>{lastMessage}</p>;
+};
+
+const FriendLabel: React.FC<PropType> = ({
 	name = '',
 	lastMessage = '',
 	messageType = ChatContentType.TEXT,
 	avater,
+	isNew = false,
 	isOwnerMessage = false,
 	isSeened = false,
 	isOnline = false,
+	isTyping = false,
 	threadId,
 	userId,
-}: PropType) => {
+}) => {
 	return (
 		<div className='px-3 py-2.5 flex items-center hover:bg-indigo-100 transition-colors border-b border-indigo-100'>
 			<div className='relative flex-shrink-0 w-12 h-12 md:w-12 md:h-12 border border-indigo-200 rounded-full'>
@@ -55,31 +79,25 @@ const FriendLabel = ({
 				</h3>
 				{threadId || userId ? null : (
 					<div className={`mt-0.5 flex items-center text-xs tracking-wide`}>
-						{!isOwnerMessage || lastMessage === 'removed' ? null : (
+						{!isOwnerMessage || lastMessage === '' ? null : (
 							<FiCornerDownRight className='w-3 h-3 stroke-2' />
 						)}
 
-						{!lastMessage ? (
+						{isNew ? (
 							<p className='px-2 py-0.5 bg-indigo-200 rounded-full font-normal text-[10px] text-indigo-600'>
 								New
 							</p>
 						) : (
-							<>
-								{lastMessage === 'removed' ? (
-									<p className='ml-1 flex-1 italic'>You remove message</p>
-								) : (
-									<p className='ml-1 flex-1'>
-										{messageType === ChatContentType.IMG ? (
-											<FiImage className='w-4 h-4' />
-										) : (
-											lastMessage
-										)}
-									</p>
-								)}
-							</>
+							<div className='ml-1 flex-1'>
+								<MessageContainer
+									lastMessage={lastMessage}
+									messageType={messageType}
+									isTyping={isTyping}
+								/>
+							</div>
 						)}
 
-						{!isOwnerMessage && lastMessage ? (
+						{!isOwnerMessage && lastMessage && !isTyping ? (
 							<span className='ml-1 w-2 h-2 rounded-full bg-indigo-300' />
 						) : null}
 					</div>

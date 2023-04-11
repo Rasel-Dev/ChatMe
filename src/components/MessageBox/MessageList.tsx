@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import MessageLabel from './MessageLabel';
-import useApp from '../../hooks/useApp';
 import { WithProfileType } from '../../types/custom';
-import ScrollToBottom from './ScrollToBottom';
 import { useParams } from 'react-router-dom';
+import ScrollToBottom from './ScrollToBottom';
 
 type PropType = {
 	messages: WithProfileType[];
@@ -79,8 +78,9 @@ const MessageList: React.FC<PropType> = ({ messages = [] }) => {
 					content={message?.body}
 					isMe={!!message?.own}
 					widgets={!!message?.widgets}
+					react={message?.React || []}
 					timestamp={message?.createdAt || ''}
-					isType={message?.onTyping}
+					isType={!!message?.onTyping}
 					isPoped={!!message?.pop}
 					isLoading={typeof message?.id !== 'string'}
 				/>

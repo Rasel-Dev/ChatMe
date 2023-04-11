@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import Button from '../../components/Buttons/Button';
-import Input, { PasswordInput } from '../../components/Inputs/Input';
+import Button from '../../components/buttons/Button';
+import Input, { PasswordInput } from '../../components/inputs/Input';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { InputType } from '../../types/custom';
 import axios from '../../utils/axios';
@@ -45,7 +45,10 @@ const LoginPage = () => {
 
 		try {
 			const { data } = await axios.post(`/users/signin`, form);
-			dispatch({ type: 'AUTH', payload: data });
+			dispatch({
+				type: 'AUTH',
+				payload: data,
+			});
 			localStorage.setItem('_token', data?.token);
 			navigate(from, { replace: true });
 		} catch (error: any) {

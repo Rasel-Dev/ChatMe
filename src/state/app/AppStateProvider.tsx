@@ -1,23 +1,13 @@
-import {
-	Dispatch,
-	createContext,
-	useCallback,
-	useEffect,
-	useMemo,
-	useReducer,
-} from 'react';
+import { Dispatch, createContext, useEffect, useMemo, useReducer } from 'react';
 import appReducer from './reducer';
-import { AppActionType, CB, initialStateType } from './types';
-import { useLocalStorage } from '../../hooks/useLocalStorage';
-import axios from '../../utils/axios';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { AppActionType, initialStateType } from './types';
 import useAxios from '../../hooks/useAxios';
 import socketInstance from '../../utils/socket';
 import { ReturnSocketSubscribeType } from '../../types/custom';
 
 export const initialAppState = {
 	isListMenuOpen: false,
-	auth: 0,
+	auth: '',
 	token: '',
 	userAvater: '',
 	friends: [],
@@ -30,6 +20,7 @@ export const initialAppState = {
 	},
 	chat: {
 		activeRoom: '',
+		onMessageReactor: '',
 		bio: {
 			name: '',
 			avater: '',
@@ -38,6 +29,7 @@ export const initialAppState = {
 			is_typing: false,
 		},
 		conversations: [],
+		participants: [],
 		loadIds: [],
 	},
 };
@@ -88,6 +80,15 @@ const AppStateProvider: React.FC<PropType> = ({ children }) => {
 						);
 						socketInstance.on('status:offline', (userId: string) =>
 							dispatch({ type: 'USER_OFFLINE', payload: userId })
+						);
+						socketInstance.on(
+							'on:typing',
+							(threadId: string, userId: string, isTyping: boolean) => {
+								dispatch({
+									type: 'TOGGLE_TYPING',
+									payload: { threadId, userId, isTyping },
+								});
+							}
 						);
 						socketInstance.on('message', (messageContent: any) => {
 							// console.log('messageContent :', messageContent);

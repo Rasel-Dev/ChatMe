@@ -3,6 +3,7 @@ import {
 	FriendType,
 	LabelProfileType,
 	MessageContentType,
+	ParticipantType,
 	ReturnSocketSubscribeType,
 	SearchFriendType,
 	SearchGroupType,
@@ -11,7 +12,7 @@ import {
 
 export type initialStateType = {
 	isListMenuOpen: boolean;
-	auth: number;
+	auth: string;
 	token: string;
 	userAvater: string;
 	friends: FriendType[];
@@ -24,6 +25,7 @@ export type initialStateType = {
 	};
 	chat: {
 		activeRoom: string;
+		onMessageReactor: string;
 		bio: {
 			name: string;
 			avater: string;
@@ -32,20 +34,29 @@ export type initialStateType = {
 			is_typing?: boolean;
 		};
 		conversations: WithProfileType[];
+		participants: ParticipantType[];
 		loadIds: any[];
 	};
 };
 
 type LoginActionType = {
 	type: 'AUTH';
-	payload: { auth: number; token: string };
+	payload: { id: string; token: string };
+};
+type ClearAuthType = {
+	type: 'UNAUTH';
 };
 type ListToggleType = {
 	type: 'TOGGLE_LIST';
 };
 type InitFriendType = {
 	type: 'INIT_FRIEND';
-	payload: { avater: string; requested: number; friends: FriendType[] };
+	payload: {
+		id: string;
+		avater: string;
+		requested: number;
+		friends: FriendType[];
+	};
 };
 type UserActivityType = {
 	type: 'USER_ACTIVITY';
@@ -80,10 +91,25 @@ type InitChatActionType = {
 		threadId: string;
 		bio: BioType;
 		conversations: MessageContentType[];
+		participants: ParticipantType[];
+	};
+};
+type ShowReactorType = {
+	type: 'SET_MESSAGE_REACTOR';
+	payload: {
+		messageId: string;
 	};
 };
 type ClearChatActionType = {
 	type: 'CLEAN_CHAT_WINDOW';
+};
+type ToggleTypingType = {
+	type: 'TOGGLE_TYPING';
+	payload: {
+		threadId: string;
+		userId: string;
+		isTyping: boolean;
+	};
 };
 type AddLabelMessage = {
 	type: 'APPEND_LABEL_MESSAGE';
@@ -116,6 +142,7 @@ type RemoveMessage = {
 
 export type AppActionType =
 	| LoginActionType
+	| ClearAuthType
 	| ListToggleType
 	| InitFriendType
 	| InitFriendsStatus
@@ -126,14 +153,10 @@ export type AppActionType =
 	| InitSearchFriendType
 	| InitChatActionType
 	| ClearChatActionType
+	| ShowReactorType
+	| ToggleTypingType
 	| AddLabelMessage
 	| RemoveLabelMessage
 	| AddMessage
 	| AddSuccessMessage
 	| RemoveMessage;
-
-// Handler types
-export type CB = (
-	error?: { [index: string]: string } | null,
-	data?: unknown
-) => void;
