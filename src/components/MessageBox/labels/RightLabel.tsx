@@ -1,12 +1,11 @@
-import dayjs from 'dayjs';
 import React, { useState } from 'react';
 import { FiMoreVertical, FiSmile } from 'react-icons/fi';
 import { ChatContentType, ReactType } from '../../../types/custom';
+import { MEDIA_URI } from '../../../utils';
 import Delete from './Delete';
-import { ORIGIN } from '../../../utils/axios';
-import Timestamp from './Timestamp';
-import Reactor from './Reactor';
 import ReactStatusComp from './ReactStatus';
+import Reactor from './Reactor';
+import Timestamp from './Timestamp';
 
 type LabelType = {
 	id: string | number;
@@ -41,11 +40,11 @@ const RightLabel: React.FC<LabelType> = ({
 	return (
 		<div
 			className={`group/msg flex flex-col items-end ${
-				!enableWidgets ? 'my-1' : 'mt-1.5 mb-3'
+				!enableWidgets ? 'my-0.5' : 'mt-1.5 mb-3'
 			}`}
 		>
 			{content === '' ? (
-				<div className='max-w-sm md:max-w-xs inline-block px-2.5 py-1.5 rounded-md border border-slate-300 text-slate-400 tracking-wider font-light italic text-sm select-none'>
+				<div className='max-w-sm md:max-w-xs inline-block px-2.5 py-1.5 rounded-2xl border border-slate-300 text-slate-400 tracking-wider font-light italic text-sm select-none'>
 					You remove message
 				</div>
 			) : (
@@ -62,14 +61,14 @@ const RightLabel: React.FC<LabelType> = ({
 							<div className='mr-2.5 flex items-center'>
 								<button
 									type='button'
-									className='mr-1.5 flex-shrink-0 outline-none w-7 h-7 grid place-content-center rounded-full bg-indigo-200 hover:bg-indigo-100 transition-colors'
+									className='mr-1.5 flex-shrink-0 outline-none w-7 h-7 grid place-content-center rounded-full bg-indigo-100 hover:bg-indigo-200 transition-colors'
 									onClick={() => toggleWidgets(1)}
 								>
 									<FiMoreVertical className='w-4 h-4 text-gray-600' />
 								</button>
 								<button
 									type='button'
-									className='flex-shrink-0 outline-none w-7 h-7 grid place-content-center rounded-full bg-indigo-200 hover:bg-indigo-100 transition-colors'
+									className='flex-shrink-0 outline-none w-7 h-7 grid place-content-center rounded-full bg-indigo-100 hover:bg-indigo-200 transition-colors'
 									onClick={() => toggleWidgets(2)}
 								>
 									<FiSmile className='w-4 h-4 text-gray-600' />
@@ -79,21 +78,19 @@ const RightLabel: React.FC<LabelType> = ({
 					) : null}
 
 					{type === ChatContentType.TEXT && (
-						<div className='relative max-w-sm md:max-w-xs inline-block px-3 py-2 rounded-md bg-indigo-500 text-slate-200 tracking-wider font-normal text-sm'>
+						<div className='relative max-w-sm md:max-w-xs inline-block px-3 py-2 rounded-3xl bg-indigo-500 text-slate-200 tracking-wider font-normal text-sm'>
 							<p>{content}</p>
 							<ReactStatusComp id={id + ''} reactions={react} />
 						</div>
 					)}
 					{type === ChatContentType.IMG && (
-						<div className='relative max-w-md max-h-96 inline-block border border-indigo-100 shadow-lg'>
+						<div className='relative max-w-[240px] md:max-w-md max-h-max inline-block border border-indigo-100 shadow-lg'>
 							<img
 								src={
-									/^blob:/i.test(content)
-										? content
-										: `${ORIGIN}static/${content}`
+									/^blob:/i.test(content) ? content : `${MEDIA_URI}/${content}`
 								}
 								crossOrigin='anonymous'
-								className='object-cover max-w-md max-h-96 rounded-md'
+								className='object-cover rounded-md'
 								alt='uploaded'
 							/>
 							<ReactStatusComp id={id + ''} reactions={react} />

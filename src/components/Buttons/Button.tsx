@@ -5,12 +5,14 @@ type BtnProp = {
 	handler: () => void;
 	children?: React.ReactNode;
 	transparent?: boolean;
+	isDisabled?: boolean;
 	isLoading?: boolean;
 };
 const Button = ({
 	title,
 	handler,
 	transparent,
+	isDisabled,
 	isLoading,
 	children,
 }: BtnProp) => {
@@ -18,12 +20,14 @@ const Button = ({
 		<button
 			type='button'
 			className={`px-4 p-3 rounded-lg outline-none tracking-wide ${
+				isDisabled && 'opacity-25'
+			} ${
 				transparent
 					? 'bg-transparent text-indigo-500 hover:underline'
 					: 'bg-indigo-500 text-white'
 			}`}
 			onClick={handler}
-			disabled={isLoading}
+			disabled={isLoading || isDisabled}
 		>
 			<span className='flex items-center'>
 				<span>{title}</span>

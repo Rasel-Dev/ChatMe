@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { FiImage, FiSend, FiX } from 'react-icons/fi';
+import {
+	setNewMessage,
+	setSuccessNewMessage,
+} from '../../app/features/chatSlice';
+import { setLabelMessage } from '../../app/features/friendSlice';
+import { useAppDispatch } from '../../hooks/hook';
 import { ChatContentType, InputType } from '../../types/custom';
-import useApp from '../../hooks/useApp';
 import socketInstance from '../../utils/socket';
 
 type PropTypes = { chatId?: string };
@@ -9,7 +14,8 @@ type PropTypes = { chatId?: string };
 let timeout: any;
 
 const MessageTyper: React.FC<PropTypes> = ({ chatId }) => {
-	const { dispatch } = useApp();
+	// const { dispatch } = useApp();
+	const Dispatch = useAppDispatch();
 	const [text, setText] = useState('');
 	const [file, setFile] = useState<File>();
 	const [preview, setPreview] = useState<string | null>(null);
@@ -49,68 +55,116 @@ const MessageTyper: React.FC<PropTypes> = ({ chatId }) => {
 		const fileTmpId = Math.floor(new Date().valueOf() * Math.random());
 
 		if (text) {
-			dispatch({
-				type: 'APPEND_MESSAGE',
-				payload: {
+			Dispatch(
+				setNewMessage({
 					threadId: chatId,
 					id: textTmpId,
 					body: text,
 					cType: ChatContentType.TEXT,
 					own: true,
-				},
-			});
+				})
+			);
+			// dispatch({
+			// 	type: 'APPEND_MESSAGE',
+			// 	payload: {
+			// 		threadId: chatId,
+			// 		id: textTmpId,
+			// 		body: text,
+			// 		cType: ChatContentType.TEXT,
+			// 		own: true,
+			// 	},
+			// });
 			socketInstance.emit('send:message', chatId, text, (status: any) => {
 				if (status?.success) {
-					dispatch({
-						type: 'APPEAR_MESSAGE_SUCCESS',
-						payload: {
+					Dispatch(
+						setSuccessNewMessage({
 							temp: textTmpId,
 							replace: status?.success,
-						},
-					});
-					dispatch({
-						type: 'APPEND_LABEL_MESSAGE',
-						payload: {
+						})
+					);
+					Dispatch(
+						setLabelMessage({
 							threadId: chatId,
 							id: status?.success,
 							body: text,
 							cType: ChatContentType.TEXT,
 							own: true,
-						},
-					});
+						})
+					);
+					// dispatch({
+					// 	type: 'APPEAR_MESSAGE_SUCCESS',
+					// 	payload: {
+					// 		temp: textTmpId,
+					// 		replace: status?.success,
+					// 	},
+					// });
+					// dispatch({
+					// 	type: 'APPEND_LABEL_MESSAGE',
+					// 	payload: {
+					// 		threadId: chatId,
+					// 		id: status?.success,
+					// 		body: text,
+					// 		cType: ChatContentType.TEXT,
+					// 		own: true,
+					// 	},
+					// });
 				}
 			});
 		}
 		if (file && preview) {
-			dispatch({
-				type: 'APPEND_MESSAGE',
-				payload: {
+			Dispatch(
+				setNewMessage({
 					threadId: chatId,
 					id: fileTmpId,
 					body: preview,
 					cType: ChatContentType.IMG,
 					own: true,
-				},
-			});
+				})
+			);
+			// dispatch({
+			// 	type: 'APPEND_MESSAGE',
+			// 	payload: {
+			// 		threadId: chatId,
+			// 		id: fileTmpId,
+			// 		body: preview,
+			// 		cType: ChatContentType.IMG,
+			// 		own: true,
+			// 	},
+			// });
 			socketInstance.emit('send:image', chatId, file, (status: any) => {
 				if (status?.success) {
-					dispatch({
-						type: 'APPEAR_MESSAGE_SUCCESS',
-						payload: {
+					Dispatch(
+						setSuccessNewMessage({
 							temp: fileTmpId,
 							replace: status?.success,
-						},
-					});
-					dispatch({
-						type: 'APPEND_LABEL_MESSAGE',
-						payload: {
+						})
+					);
+					Dispatch(
+						setLabelMessage({
 							threadId: chatId,
 							id: status?.success,
 							body: '',
 							cType: ChatContentType.IMG,
 							own: true,
-						},
-					});
+						})
+					);
+					// dispatch({
+					// 	type: 'APPEAR_MESSAGE_SUCCESS',
+					// 	payload: {
+					// 		temp: fileTmpId,
+					// 		replace: status?.success,
+					// 	},
+					// });
+					// dispatch({
+					// 	type: 'APPEND_LABEL_MESSAGE',
+					// 	payload: {
+					// 		threadId: chatId,
+					// 		id: status?.success,
+					// 		body: '',
+					// 		cType: ChatContentType.IMG,
+					// 		own: true,
+					// 	},
+					// });
 				}
 			});
 		}
@@ -120,7 +174,7 @@ const MessageTyper: React.FC<PropTypes> = ({ chatId }) => {
 	};
 
 	return (
-		<div className='w-full bg-indigo-50'>
+		<div className='w-full'>
 			{!file || !preview ? null : (
 				<div className='flex p-3 bg-indigo-100'>
 					<div className='relative border border-indigo-300 rounded-lg'>
@@ -132,14 +186,14 @@ const MessageTyper: React.FC<PropTypes> = ({ chatId }) => {
 							<FiX className='w-5 h-5 stroke-1 text-red-500' />
 						</button>
 						<img
-							className='object-contain h-28 w-28'
+							className='object-cover h-28 w-28 rounded-lg'
 							src={preview}
 							alt={'file'}
 						/>
 					</div>
 				</div>
 			)}
-			<div className='h-16 flex items-stretch border-t border-indigo-200'>
+			<div className='h-16 flex items-stretch bg-white'>
 				<label
 					htmlFor='file-attach'
 					className='grid place-content-center cursor-pointer p-3'

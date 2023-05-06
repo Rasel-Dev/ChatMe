@@ -1,64 +1,69 @@
-import React, { useState } from 'react';
-import { FiLogOut, FiBell, FiX } from 'react-icons/fi';
+import { useState } from 'react';
+import { useCookies } from 'react-cookie';
+import { FiBell, FiLogOut, FiSettings, FiX } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-import useApp from '../hooks/useApp';
+import { selectNotify } from '../app/features/notifySlice';
+import { remCredentials } from '../app/features/userSlice';
+import { useLogoutMutation } from '../app/services/authApi';
+import { useAppDispatch, useAppSelector } from '../hooks/hook';
+import socketInstance from '../utils/socket';
+import WidgetButton from './buttons/WidgetButton';
+import Notification from './notification/Notification';
 
 const Header = () => {
-	const { dispatch } = useApp();
+	const [_, _s, removeCookie] = useCookies(['logged_in']);
+	const { hasUnseenNotice } = useAppSelector(selectNotify);
+	const Dispatch = useAppDispatch();
+	const [logoutUser] = useLogoutMutation();
+
+	const [isNotificationOpen, setNotification] = useState(false);
 	const [menuOpen, setMenuOpen] = useState(false);
 	const navigate = useNavigate();
 
-	const onMenuOpen = () => setMenuOpen((prev) => !prev);
+	const toggleNotificationWindow = () => setNotification((prev) => !prev);
 
-	const logout = () => {
-		dispatch({ type: 'UNAUTH' });
+	const gotoSetting = () => {
+		navigate('/settings');
+	};
+
+	const onLogout = async () => {
+		logoutUser();
+		Dispatch(remCredentials());
+		removeCookie('logged_in');
+		localStorage.clear();
+		socketInstance.disconnect();
+		// location.reload();
 		navigate('/login', { replace: true });
 	};
 
 	return (
 		<div className='relative px-5 pt-4 flex items-center justify-between'>
 			<h1 className='font-bold text-2xl tracking-wide text-indigo-500'>
-				Chat.Me
+				ChatMe
 			</h1>
-			<div className='flex items-center'>
-				<button
-					type='button'
-					className='relative outline-none p-2 rounded-full hover:bg-indigo-100'
-					onClick={onMenuOpen}
-					title='Settings'
-				>
-					{menuOpen ? (
+			<div className='flex items-center gap-2'>
+				<WidgetButton title='Notification' onClick={toggleNotificationWindow}>
+					{isNotificationOpen ? (
 						<FiX className='w-5 h-5 stroke-2 text-gray-600' />
 					) : (
 						<FiBell className='w-5 h-5 stroke-2 text-gray-600' />
 					)}
-					{menuOpen ? null : (
-						<span className='absolute top-1 right-2 flex h-2.5 w-2.5'>
+					{isNotificationOpen || !hasUnseenNotice ? null : (
+						<span className='absolute top-1.5 right-2.5 flex h-2 w-2'>
 							<span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75'></span>
-							<span className='relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500'></span>
+							<span className='relative inline-flex rounded-full h-2 w-2 bg-indigo-500'></span>
 						</span>
 					)}
-				</button>
-				<button
-					type='button'
-					className='ml-2 outline-none p-2 rounded-full hover:bg-indigo-100'
-					onClick={logout}
-					title='Logout'
-				>
+				</WidgetButton>
+				<WidgetButton title='Settings' onClick={gotoSetting}>
+					<FiSettings className='w-5 h-5 stroke-2 text-gray-600' />
+				</WidgetButton>
+				<WidgetButton title='Logout' isMobile onClick={onLogout}>
 					<FiLogOut className='w-5 h-5 stroke-2 text-gray-600' />
-				</button>
+				</WidgetButton>
 			</div>
 
-			{!menuOpen ? null : (
-				<div className='absolute top-14 right-0 left-0 mx-2 flex flex-col rounded-md bg-white border border-indigo-100 shadow-lg z-10'>
-					<h2 className='p-2 text-center text-indigo-400 font-medium border-b border-indigo-100 tracking-wide select-none'>
-						Notifications
-					</h2>
-					<div className='py-5 text-center text-slate-400 text-xs tracking-wide select-none'>
-						No notifications yet<i>!</i>
-					</div>
-				</div>
-			)}
+			{isNotificationOpen && <Notification />}
 		</div>
 	);
 };

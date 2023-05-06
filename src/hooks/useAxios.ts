@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import axios from '../utils/axios';
 import { useNavigate } from 'react-router-dom';
+import axios from '../utils/axios';
 
 const useAxios = () => {
 	const navigate = useNavigate();

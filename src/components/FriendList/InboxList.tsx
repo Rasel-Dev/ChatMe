@@ -1,12 +1,15 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { selectFriend } from '../../app/features/friendSlice';
+import { useAppSelector } from '../../hooks/hook';
 import FriendLabel from '../FriendLabel';
-import useApp from '../../hooks/useApp';
 
 const InboxList = () => {
-	const {
-		state: { friends },
-	} = useApp();
+	// const {
+	// 	state: { friends },
+	// } = useApp();
+
+	const { friends } = useAppSelector(selectFriend);
 
 	return (
 		<>
@@ -30,6 +33,7 @@ const InboxList = () => {
 							avater={friend?.user?.avater}
 							lastMessage={friend?.body}
 							messageType={friend?.cType}
+							timestamp={friend?.timestamp}
 							isNew={typeof friend?.body !== 'string'}
 							isOwnerMessage={!!friend?.own}
 							isOnline={!!friend?.online}

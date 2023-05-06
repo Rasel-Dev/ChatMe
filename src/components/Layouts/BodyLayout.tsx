@@ -1,12 +1,12 @@
 import React, { ReactNode } from 'react';
 
-type LayoutProp = {
+type PropType = {
 	children: ReactNode;
 };
 
-const BodyLayout = ({ children }: LayoutProp) => {
+const BodyLayout: React.FC<PropType> = ({ children }) => {
 	return (
-		<div className='flex-1 min-h-screen flex flex-col relative'>{children}</div>
+		<div className='flex-1 h-screen flex flex-col relative'>{children}</div>
 	);
 };
 

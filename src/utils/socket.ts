@@ -8,7 +8,7 @@ const socketInstance = io(ORIGIN, {
 	reconnectionAttempts: 5,
 	reconnectionDelay: 5000,
 	autoConnect: false,
-	query: { _t: localStorage.getItem('_token') },
+	// query: { _t: localStorage.getItem('_token') },
 });
 
 export default socketInstance;

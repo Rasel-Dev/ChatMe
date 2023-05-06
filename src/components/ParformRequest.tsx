@@ -1,41 +1,43 @@
 import React, { useState } from 'react';
-import { FiPlus } from 'react-icons/fi';
+import { useParformRequestMutation } from '../app/services/userApi';
 import useAxios from '../hooks/useAxios';
-import useApp from '../hooks/useApp';
 
 type PropType = {
 	threadId: string;
+	userId: string;
 };
 
-const ParformRequest: React.FC<PropType> = ({ threadId }) => {
-	const {
-		state: { requests },
-	} = useApp();
-	const [isLoading, setIsLoading] = useState(false);
+const ParformRequest: React.FC<PropType> = ({ threadId, userId }) => {
+	// const [isLoading, setIsLoading] = useState(false);
 	const [status, setStatus] = useState<string | null>(null);
+	const [parformReq, { isLoading }] = useParformRequestMutation();
 	const axiosPrivate = useAxios();
 
 	const onParformRequest = async (action: 'accept' | 'cancel' = 'accept') => {
-		setIsLoading((prev) => !prev);
-		const user = requests?.filter((u) => u.threadId === threadId);
-		if (user?.[0]) {
+		// setIsLoading((prev) => !prev);
+		if (userId) {
 			try {
-				await axiosPrivate.put('/users/request', {
+				await parformReq({
 					threadId,
-					userId: user[0].userId,
+					userId,
 					action,
-				});
+				}).unwrap();
+				// await axiosPrivate.put('/users/request', {
+				// 	threadId,
+				// 	userId: userId,
+				// 	action,
+				// });
 				setStatus(action);
 			} catch (error) {
-				console.log('error :', error);
+				// console.log('error :', error);
 			}
 		}
-		setIsLoading((prev) => !prev);
+		// setIsLoading((prev) => !prev);
 	};
 
 	if (isLoading) {
 		return (
-			<div className='flex items-center justify-center gap-1'>
+			<div className='inline-flex items-center justify-center gap-1'>
 				<div
 					className='bg-indigo-400 w-1.5 h-1.5 rounded-full animate-pulse'
 					style={{ animationDelay: '0.1s', animationDuration: '0.8s' }}
@@ -73,7 +75,7 @@ const ParformRequest: React.FC<PropType> = ({ threadId }) => {
 				</button>
 				<button
 					type='button'
-					className='px-2 py-0.5 ml-2 bg-indigo-200 hover:bg-indigo-500 tracking-wide font-medium rounded-sm text-indigo-500 hover:text-white text-xs transition-colors'
+					className='px-2 py-0.5 ml-2 bg-indigo-100 hover:bg-indigo-200 tracking-wide font-medium rounded-sm text-indigo-500 text-xs transition-colors'
 					onClick={() => onParformRequest('cancel')}
 					disabled={isLoading}
 				>

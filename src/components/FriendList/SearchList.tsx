@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import useApp from '../../hooks/useApp';
+import { useEffect, useState } from 'react';
+import { FiSearch } from 'react-icons/fi';
+import { selectSearch } from '../../app/features/searchSlice';
+import { useAppSelector } from '../../hooks/hook';
 import useAxios from '../../hooks/useAxios';
 import FriendLabel from '../FriendLabel';
 
 const SearchList = () => {
-	const {
-		state: { search },
-	} = useApp();
+	const { peoples, groups } = useAppSelector(selectSearch);
+
 	// const categories = ['peoples', 'groups'];
 	const [categories, setCategory] = useState<string[]>([]);
 	const [selected, setSelected] = useState<string | null>(null);
@@ -14,11 +15,11 @@ const SearchList = () => {
 	useEffect(() => {
 		let sel = '';
 		const cats: string[] = [];
-		if (!!search?.peoples.length) {
+		if (!!peoples.length) {
 			cats.push('peoples');
 			if (!sel) sel = 'peoples';
 		}
-		if (!!search?.groups.length) {
+		if (!!groups.length) {
 			cats.push('groups');
 			if (!sel) sel = 'groups';
 		}
@@ -28,7 +29,7 @@ const SearchList = () => {
 			setCategory([]);
 			setSelected(null);
 		};
-	}, [search]);
+	}, [peoples, groups]);
 
 	const categoryHandler = (cat: string) => {
 		setSelected(cat);
@@ -63,22 +64,34 @@ const SearchList = () => {
 					))}
 				</div>
 			)}
+
+			{!peoples.length && !groups.length && (
+				<p className='text-xs text-indigo-300 flex items-center justify-center gap-2'>
+					<FiSearch className='w-4 h-4' />
+					<span>
+						No result found <i>!</i>
+					</span>
+				</p>
+			)}
+
 			{selected === 'peoples' &&
-				search?.peoples.map((user) => (
+				peoples.map((user) => (
 					<FriendLabel
 						key={user.id}
 						name={user.fullname}
 						avater={user?.avater}
 						userId={user.id}
+						labelFor='people'
 					/>
 				))}
 			{selected === 'groups' &&
-				search?.groups.map((user) => (
+				groups.map((user) => (
 					<FriendLabel
 						key={user.id}
 						name={user.subject}
 						avater={user?.avater}
 						userId={user.id}
+						labelFor='group'
 					/>
 				))}
 		</>

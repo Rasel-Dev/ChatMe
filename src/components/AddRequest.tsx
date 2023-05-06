@@ -1,25 +1,19 @@
 import React, { useState } from 'react';
 import { FiPlus } from 'react-icons/fi';
-import useAxios from '../hooks/useAxios';
+import { useReqProposalMutation } from '../app/services/userApi';
 
 type PropType = {
 	userId: string;
 };
 
 const AddRequest: React.FC<PropType> = ({ userId }) => {
-	const [isLoading, setIsLoading] = useState(false);
+	// const [isLoading, setIsLoading] = useState(false);
 	const [success, setSuccess] = useState(false);
-	const axiosPrivate = useAxios();
-	const onFriendRequest = async () => {
-		// console.log('userId :', userId);
-		setIsLoading((prev) => !prev);
-		try {
-			await axiosPrivate.post('/users/request', { userId });
-			setSuccess((prev) => !prev);
-		} catch (error) {
-			console.log('error :', error);
-		}
-		setIsLoading((prev) => !prev);
+	const [sendRequest, { isLoading }] = useReqProposalMutation();
+
+	const onFriendRequest = () => {
+		sendRequest({ userId });
+		setSuccess(true);
 	};
 	return !success ? (
 		<button

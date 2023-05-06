@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Input from '../inputs/Input';
 import { InputType } from '../../types/custom';
 import UpdateCancel from '../buttons/UpdateCancel';
+import Input from '../inputs/Input';
 
 type PropType = {
 	email: string;

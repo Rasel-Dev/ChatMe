@@ -1,4 +1,3 @@
-import React from 'react';
 import { ChatContentType, ReactType } from '../../types/custom';
 import LeftLabel from './labels/LeftLabel';
 import RightLabel from './labels/RightLabel';
@@ -6,6 +5,7 @@ import RightLabel from './labels/RightLabel';
 type MessageLebelType = {
 	id: string | number;
 	threadId: string;
+	userId: string;
 	content?: string;
 	type?: ChatContentType;
 	isMe?: boolean;
@@ -21,6 +21,7 @@ type MessageLebelType = {
 const MessageLabel = ({
 	id,
 	threadId,
+	userId,
 	content = '',
 	type = ChatContentType.TEXT,
 	isMe = false,
@@ -45,6 +46,7 @@ const MessageLabel = ({
 		<LeftLabel
 			id={id}
 			threadId={threadId}
+			userId={userId}
 			type={type}
 			content={content}
 			react={react}

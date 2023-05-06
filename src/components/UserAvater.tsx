@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ORIGIN } from '../utils/axios';
+import defAvater from '../assets/avater.png';
+import { AVATER_URI } from '../utils';
 
 type PropType = {
 	avater?: string;
@@ -9,7 +10,7 @@ const UserAvater: React.FC<PropType> = ({ avater }) => {
 	return (
 		<>
 			<img
-				src='/avater.png'
+				src={defAvater}
 				alt='avater'
 				className={`w-full h-full rounded-full ${
 					!loadAvater ? 'block' : 'hidden'
@@ -17,7 +18,7 @@ const UserAvater: React.FC<PropType> = ({ avater }) => {
 			/>
 			{!avater ? null : (
 				<img
-					src={`${ORIGIN}static/${avater}`}
+					src={`${AVATER_URI}/${avater}`}
 					alt='avater'
 					crossOrigin='anonymous'
 					className={`w-full h-full rounded-full object-cover ${

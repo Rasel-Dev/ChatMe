@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { InputType } from '../../types/custom';
+import { useState } from 'react';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { InputType } from '../../types/custom';
 type InputProp = {
 	name: string;
 	handler: (e: InputType) => void;
@@ -22,7 +22,7 @@ const Input = ({
 	error = '',
 }: InputProp) => {
 	return (
-		<div className='bg-transparent'>
+		<div className='bg-transparent flex-1'>
 			{showLabel && (
 				<label
 					htmlFor={name}
@@ -38,6 +38,7 @@ const Input = ({
 				placeholder={hint}
 				value={value || ''}
 				onChange={handler}
+				autoComplete='off'
 				disabled={isLoading}
 			/>
 			{!error ? null : (
@@ -77,9 +78,9 @@ export const PasswordInput = ({
 				{!value ? null : (
 					<button type='button' className='p-2' onClick={onVisible}>
 						{show ? (
-							<FiEyeOff className='w-5 h-5 stroke-2 text-indigo-300' />
+							<FiEyeOff className='w-5 h-5 stroke-1 text-indigo-300' />
 						) : (
-							<FiEye className='w-5 h-5 stroke-2 text-indigo-300' />
+							<FiEye className='w-5 h-5 stroke-1 text-indigo-300' />
 						)}
 					</button>
 				)}

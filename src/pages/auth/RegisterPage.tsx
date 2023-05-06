@@ -1,29 +1,23 @@
-import React, { useState } from 'react';
-import Button from '../../components/buttons/Button';
-import Input, { PasswordInput } from '../../components/inputs/Input';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import useApp from '../../hooks/useApp';
-import { InputType } from '../../types/custom';
-import axios from '../../utils/axios';
-import { FiPlus } from 'react-icons/fi';
+import { useSignupMutation } from '../../app/services/authApi';
+import Button from '../../components/buttons/Button';
+import AvaterInput from '../../components/inputs/AvaterInput';
+import Input, { PasswordInput } from '../../components/inputs/Input';
+import CenterLayout from '../../components/layouts/CenterLayout';
+import { InputType, Register } from '../../types/custom';
+import { isFetchBaseQueryError } from '../../utils/helper';
 
 const RegisterPage = () => {
-	const { dispatch } = useApp();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const from = location.state?.from?.pathname || '/';
 
 	const [avater, setAvater] = useState<File>();
 	const [preview, setPreview] = useState<string | null>(null);
-	const [form, setForm] = useState({
-		fullname: '',
-		username: '',
-		email: '',
-		password: '',
-	});
-	const [errors, setErrors] = useState<{ [index: string]: string | boolean }>(
-		{}
-	);
+	const [form, setForm] = useState<Register>({} as Register);
+	const [errors, setErrors] = useState<{ [index: string]: string }>({});
+	const [registerUser, { isLoading, isSuccess }] = useSignupMutation();
 
 	const gotoLogin = () => {
 		navigate('/login');
@@ -41,14 +35,15 @@ const RegisterPage = () => {
 
 	function onChangeProfile(e: InputType) {
 		if (e.target.files && e.target.files[0]) {
-			setAvater(e.target.files[0]);
-			setPreview(URL.createObjectURL(e.target.files[0]));
+			const avater = e.target.files[0];
+			setAvater(avater);
+			setPreview(URL.createObjectURL(avater));
 		}
 	}
 
 	const isValid = () => {
-		const { fullname, username, email, password } = form;
-		const err: { [index: string]: string | boolean } = {};
+		const { fullname, username, email, password } = form!;
+		const err: { [index: string]: string } = {};
 		//level 1
 		if (!fullname) err.fullname = 'Fullname is required!';
 		if (!username) err.username = 'Username is required!';
@@ -71,115 +66,121 @@ const RegisterPage = () => {
 
 	const onSubmit = async () => {
 		if (isValid()) {
-			setErrors({ loading: true });
 			try {
-				const { data } = await axios.post(
-					`/users/signup`,
-					{ ...form, avater },
-					{
-						headers: {
-							'content-type': 'multipart/form-data',
-						},
-					}
-				);
-				dispatch({ type: 'AUTH', payload: data });
-				localStorage.setItem('_token', data?.token);
-				navigate(from, { replace: true });
-			} catch (error: any) {
-				// console.log('error [XX]:', error?.response);
-				if (error?.response && error.response?.status) {
-					if (error.response.status === 400) {
-						setErrors(error?.response?.data);
-					}
-					if (error.response.status === 500) {
-						alert('Internal server error');
-					}
-				} else {
-					alert('Internal server error');
+				const formData = new FormData();
+				formData.append('fullname', form.fullname);
+				formData.append('username', form.username);
+				formData.append('email', form.email);
+				formData.append('password', form.password);
+				formData.append('avater', avater!);
+
+				await registerUser(formData).unwrap();
+			} catch (error) {
+				if (isFetchBaseQueryError(error)) {
+					// const errMsg = 'error' in error ? error.error : error.data;
+					setErrors(error.data as { [index: string]: string });
 				}
 			}
-			setErrors((prev) => ({ ...prev, loading: false }));
 		}
+		// setErrors({ loading: true });
+		// try {
+		// 	const { data } = await axios.post(
+		// 		`/users/signup`,
+		// 		{ ...form, avater },
+		// 		{
+		// 			headers: {
+		// 				'content-type': 'multipart/form-data',
+		// 			},
+		// 		}
+		// 	);
+		// 	// dispatch({ type: 'AUTH', payload: data });
+		// 	localStorage.setItem('_token', data?.token);
+		// 	navigate(from, { replace: true });
+		// } catch (error: any) {
+		// 	// console.log('error [XX]:', error?.response);
+		// 	if (error?.response && error.response?.status) {
+		// 		if (error.response.status === 400) {
+		// 			setErrors(error?.response?.data);
+		// 		}
+		// 		if (error.response.status === 500) {
+		// 			alert('Internal server error');
+		// 		}
+		// 	} else {
+		// 		alert('Internal server error');
+		// 	}
+		// }
+		// setErrors((prev) => ({ ...prev, loading: false }));
+		// }
 	};
 
+	useEffect(() => {
+		if (isSuccess) {
+			navigate('/', { replace: true });
+		}
+	}, [isSuccess]);
+
 	return (
-		<div className='h-screen w-full flex items-center justify-center'>
-			<div className='w-2/5 p-4 bg-white rounded-xl shadow-md'>
-				<h1 className='text-center font-bold text-indigo-500 text-4xl tracking-wide'>
-					ChatMe
-				</h1>
-				<div className='mt-4 flex flex-col gap-4'>
-					<div className='grid place-content-center'>
-						<label
-							htmlFor='profile-avater'
-							className='grid place-content-center cursor-pointer'
-						>
-							<div className='relative w-24 h-24 border border-indigo-200 rounded-full'>
-								<FiPlus className='absolute bottom-1 right-1 bg-indigo-300 text-white w-4 h-4 rounded-full overflow-hidden' />
-								<img
-									src={preview || '/avater.png'}
-									alt='avater'
-									className='w-full object-cover h-full rounded-full'
-								/>
-							</div>
-						</label>
-						<input
-							type='file'
-							className='hidden'
-							id='profile-avater'
-							onChange={onChangeProfile}
-						/>
-					</div>
-
-					<Input
-						name='fullname'
-						hint='Fullname'
-						value={form.fullname}
-						handler={onChange}
-						isLoading={!!errors?.loading}
-						error={errors?.fullname?.toString()}
+		<CenterLayout>
+			<h1 className='text-center font-bold text-indigo-500 text-4xl tracking-wide'>
+				ChatMe
+			</h1>
+			<div className='mt-4 flex flex-col gap-4'>
+				<div className='grid place-content-center'>
+					<AvaterInput
+						preview={preview}
+						onChange={onChangeProfile}
+						size={'w-28 h-28'}
 					/>
+				</div>
 
-					<Input
-						name='username'
-						hint='Username'
-						value={form.username}
-						handler={onChange}
-						isLoading={!!errors?.loading}
-						error={errors?.username?.toString()}
+				<Input
+					name='fullname'
+					hint='Fullname'
+					value={form?.fullname}
+					handler={onChange}
+					isLoading={isLoading}
+					error={errors?.fullname?.toString()}
+				/>
+
+				<Input
+					name='username'
+					hint='Username'
+					value={form?.username}
+					handler={onChange}
+					isLoading={isLoading}
+					error={errors?.username?.toString()}
+				/>
+
+				<Input
+					type='email'
+					name='email'
+					hint='Email address'
+					value={form?.email}
+					handler={onChange}
+					isLoading={isLoading}
+					error={errors?.email?.toString()}
+				/>
+
+				<PasswordInput
+					name='password'
+					hint='Password'
+					value={form?.password}
+					handler={onChange}
+					isLoading={isLoading}
+					error={errors?.password?.toString()}
+				/>
+
+				<div className='flex items-center justify-end'>
+					<Button title='Login Account' transparent handler={gotoLogin} />
+					<div className='px-1' />
+					<Button
+						title='Create new account'
+						handler={onSubmit}
+						isLoading={isLoading}
 					/>
-
-					<Input
-						type='email'
-						name='email'
-						hint='Email address'
-						value={form.email}
-						handler={onChange}
-						isLoading={!!errors?.loading}
-						error={errors?.email?.toString()}
-					/>
-
-					<PasswordInput
-						name='password'
-						hint='Password'
-						value={form.password}
-						handler={onChange}
-						isLoading={!!errors?.loading}
-						error={errors?.password?.toString()}
-					/>
-
-					<div className='flex items-center justify-end'>
-						<Button title='Login Account' transparent handler={gotoLogin} />
-						<div className='px-1' />
-						<Button
-							title='Create new account'
-							handler={onSubmit}
-							isLoading={!!errors?.loading}
-						/>
-					</div>
 				</div>
 			</div>
-		</div>
+		</CenterLayout>
 	);
 };
 

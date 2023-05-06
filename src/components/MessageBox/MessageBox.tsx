@@ -1,124 +1,94 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { FriendLabelHeader } from '../FriendLabel';
-import MessageTyper from './MessageTyper';
+import { useEffect } from 'react';
+import { clearChat, setReact } from '../../app/features/chatSlice';
+import { selectMenu } from '../../app/features/menuSlice';
+import { useGetRoomMutation } from '../../app/services/chatApi';
+import { useAppDispatch, useAppSelector } from '../../hooks/hook';
 import useAxios from '../../hooks/useAxios';
-import useApp from '../../hooks/useApp';
-import MessageList from './MessageList';
+import { ReceiveReactType } from '../../types/custom';
+import socketInstance from '../../utils/socket';
+import { FriendLabelHeader } from '../FriendLabel';
 import BodyLayout from '../layouts/BodyLayout';
-import PopupBox from '../PopupBox';
-import ReactionWindow from '../ReactionWindow';
+import MessageList from './MessageList';
+import MessageTyper from './MessageTyper';
+import ReactionWindow from './ReactionWindow';
 
 const MessageBox = ({ chatId = '' }: { chatId: string }) => {
-	const {
-		state: { chat },
-		dispatch,
-	} = useApp();
 	const axiosPrivate = useAxios();
+	const Dispatch = useAppDispatch();
+	const [getRoomData] = useGetRoomMutation();
 
-	const messageEndRef = useRef<HTMLDivElement>(null);
-	const [IsAnimated, setIsAnimated] = useState(false);
-
-	const scrollToBottom = (behavior: 'instant' | 'smooth' = 'instant') => {
-		messageEndRef.current?.scrollIntoView({ behavior });
-	};
+	const { isFriendListOpen } = useAppSelector(selectMenu);
 
 	useEffect(() => {
 		let isMounted = true;
-		const controller = new AbortController();
-
-		(async () => {
-			// loading...
-			try {
-				const res = await axiosPrivate.get(`/chats/${chatId}`, {
-					signal: controller.signal,
-				});
-				const resData = res?.data;
-				// console.log('resData :', resData);
-				if (isMounted) {
-					dispatch({
-						type: 'INIT_CHAT',
-						payload: { threadId: chatId, ...resData },
-					});
-					dispatch({
-						type: 'TOGGLE_LIST',
-					});
-					// setTimeout(() => {
-					// 	console.log('Before');
-
-					// 	dispatch({
-					// 		type: 'TOGGLE_TYPING',
-					// 		payload: {
-					// 			threadId: '05829122-8022-4bc2-9441-de82a285ee35',
-					// 			userId: '249888fd-e1f2-4681-9682-badc622b4a38',
-					// 			isTyping: true,
-					// 		},
-					// 	});
-					// 	setTimeout(() => {
-					// 		dispatch({
-					// 			type: 'TOGGLE_TYPING',
-					// 			payload: {
-					// 				threadId: '05829122-8022-4bc2-9441-de82a285ee35',
-					// 				userId: '249888fd-e1f2-4681-9682-badc622b4a38',
-					// 				isTyping: false,
-					// 			},
-					// 		});
-					// 	}, 10000);
-					// 	console.log('After');
-					// }, 5000);
-					// socketInstance.on('message', (messageContent: any) => {
-					// 	console.log('messageContent :', messageContent);
-					// 	// dispatch({
-					// 	// 	type: 'APPEND_LABEL_MESSAGE',
-					// 	// 	payload: { ...messageContent },
-					// 	// });
-					// 	dispatch({
-					// 		type: 'APPEND_MESSAGE',
-					// 		payload: messageContent,
-					// 	});
-					// });
-				}
-			} catch (error) {
-				console.log('MessageBox', error);
-			}
-		})();
+		let RoomDataController: any;
+		if (chatId && isMounted) {
+			RoomDataController = getRoomData(chatId);
+			// Dispatch(toggleFriendList());
+			socketInstance.on('react', (react: ReceiveReactType) => {
+				Dispatch(setReact(react));
+			});
+			// socketInstance.on(
+			// 	'on:typing',
+			// 	(threadId: string, userId: string, isTyping: boolean) => {
+			// 		Dispatch(setTyping({ threadId, userId, isTyping }));
+			// 	}
+			// );
+			// socketInstance.on('message', (messageContent: any) => {
+			// 	Dispatch(setNewMessage(messageContent));
+			// });
+			// socketInstance.on('removed', (messageContent: any) => {
+			// 	Dispatch(remMessage(messageContent));
+			// });
+		}
+		// const roomData = getRoomData(chatId);
+		// (async () => {
+		// 	// loading...
+		// 	try {
+		// const res = await axiosPrivate.get(`/chats/${chatId}`, {
+		// 	signal: controller.signal,
+		// });
+		// const resData = res?.data;
+		// console.log('resData :', resData);
+		// if (isMounted) {
+		// 	// Dispatch(initChats({ threadId: chatId, ...resData }));
+		// 	Dispatch(toggleFriendList());
+		// 	socketInstance.on('react', (react: ReceiveReactType) => {
+		// 		Dispatch(setReact(react));
+		// 	});
+		// 	socketInstance.on(
+		// 		'on:typing',
+		// 		(threadId: string, userId: string, isTyping: boolean) => {
+		// 			Dispatch(setTyping({ threadId, userId, isTyping }));
+		// 		}
+		// 	);
+		// 	socketInstance.on('message', (messageContent: any) => {
+		// 		Dispatch(setNewMessage(messageContent));
+		// 	});
+		// 	socketInstance.on('removed', (messageContent: any) => {
+		// 		Dispatch(remMessage(messageContent));
+		// 	});
+		// 	console.log('render');
+		// }
+		// 	} catch (error) {
+		// 		console.log('MessageBox', error);
+		// 	}
+		// })();
 
 		// cleanup
 		return () => {
 			isMounted = false;
-			controller.abort();
-			dispatch({ type: 'CLEAN_CHAT_WINDOW' });
+			RoomDataController && RoomDataController.abort();
+			Dispatch(clearChat());
 		};
-	}, [axiosPrivate, chatId]);
-
-	useEffect(() => {
-		window.addEventListener('scroll', () => {
-			console.log('window.scrollY  :', window.scrollY);
-		});
-	}, []);
-
-	// useEffect(() => {
-	// 	// 👇️ scroll to bottom every time messages change
-	// 	if (IsAnimated) {
-	// 		scrollToBottom('smooth');
-	// 	}
-	// 	if (!IsAnimated && !!chat?.conversations.length) {
-	// 		console.log(
-	// 			'!IsAnimated && !!chat?.conversations.length :',
-	// 			IsAnimated,
-	// 			chat?.conversations.length
-	// 		);
-	// 		scrollToBottom();
-	// 		setIsAnimated(true);
-	// 	}
-	// 	// messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-	// }, [chat?.conversations]);
+	}, [chatId]);
 
 	return (
 		<BodyLayout>
 			<FriendLabelHeader />
-			<MessageList messages={chat?.conversations || []} />
+			<MessageList />
 			<MessageTyper chatId={!chatId ? '' : chatId} />
-			{chat?.activeRoom && chat?.onMessageReactor && <ReactionWindow />}
+			<ReactionWindow />
 		</BodyLayout>
 	);
 };

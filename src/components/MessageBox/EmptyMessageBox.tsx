@@ -1,8 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import MessageList from './MessageList';
+import { useEffect } from 'react';
+import { selectMenu, toggleFriendList } from '../../app/features/menuSlice';
+import { useAppDispatch, useAppSelector } from '../../hooks/hook';
 import BodyLayout from '../layouts/BodyLayout';
 
 const EmptyMessageBox = () => {
+	const { isFriendListOpen } = useAppSelector(selectMenu);
+	const Dispatch = useAppDispatch();
+
+	useEffect(() => {
+		Dispatch(toggleFriendList(true));
+		return () => {
+			Dispatch(toggleFriendList(false));
+		};
+	}, []);
 	return (
 		<BodyLayout>
 			<div className='grid place-content-center min-h-screen select-none'>

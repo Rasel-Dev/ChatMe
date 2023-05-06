@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Typing = () => {
 	return (
 		<div className='inline-flex items-center justify-center gap-1'>

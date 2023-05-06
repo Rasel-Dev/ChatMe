@@ -1,24 +1,22 @@
-import React, { useCallback, useState } from 'react';
-import {
-	FiCornerDownRight,
-	FiImage,
-	FiMenu,
-	FiMoreVertical,
-} from 'react-icons/fi';
-import { AppName } from '../utils';
-import useApp from '../hooks/useApp';
+import React from 'react';
+import { FiCornerDownRight, FiImage, FiMoreVertical } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
+import { selectChat } from '../app/features/chatSlice';
+import { useAppSelector } from '../hooks/hook';
 import { ChatContentType } from '../types/custom';
+import { AppName } from '../utils';
 import AddRequest from './AddRequest';
 import ParformRequest from './ParformRequest';
-import UserAvater from './UserAvater';
-import { useNavigate } from 'react-router-dom';
 import Typing from './Typing';
+import UserAvater from './UserAvater';
+import HomeButton from './buttons/HomeButton';
 
 type PropType = {
 	name?: string;
 	lastMessage?: string;
 	messageType?: ChatContentType;
 	avater?: string;
+	timestamp?: string;
 	isNew?: boolean;
 	isOwnerMessage?: boolean;
 	isSeened?: boolean;
@@ -26,6 +24,7 @@ type PropType = {
 	isTyping?: boolean;
 	threadId?: string;
 	userId?: string;
+	labelFor?: 'chat' | 'request' | 'people' | 'group';
 };
 
 const MessageContainer: React.FC<PropType> = ({
@@ -51,6 +50,7 @@ const FriendLabel: React.FC<PropType> = ({
 	lastMessage = '',
 	messageType = ChatContentType.TEXT,
 	avater,
+	timestamp,
 	isNew = false,
 	isOwnerMessage = false,
 	isSeened = false,
@@ -58,28 +58,36 @@ const FriendLabel: React.FC<PropType> = ({
 	isTyping = false,
 	threadId,
 	userId,
+	labelFor = 'chat',
 }) => {
 	return (
-		<div className='px-3 py-2.5 flex items-center hover:bg-indigo-100 transition-colors border-b border-indigo-100'>
-			<div className='relative flex-shrink-0 w-12 h-12 md:w-12 md:h-12 border border-indigo-200 rounded-full'>
+		<div className='px-3 py-1 flex items-center hover:bg-indigo-100 transition-colors'>
+			<div className='relative flex-shrink-0 w-14 h-14 md:w-12 md:h-12 border border-indigo-200 rounded-full'>
 				{threadId || userId ? null : (
 					<>
 						{isOnline ? (
-							<div className='absolute bottom-0.5 -right-0.5 md:bottom-2 md:-right-1 w-3 h-3 bg-green-400 rounded-full border-[1.5px] border-white'></div>
+							<div className='absolute bottom-2.5 -right-1 md:bottom-2 md:-right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-indigo-50'></div>
 						) : (
-							<div className='absolute bottom-0.5 -right-0.5 md:bottom-2 md:-right-1 w-3 h-3 bg-indigo-200 rounded-full'></div>
+							<div className='absolute bottom-2.5 -right-1 md:bottom-2 md:-right-1 w-3 h-3 bg-indigo-200 rounded-full border-2 border-indigo-50'></div>
 						)}
 					</>
 				)}
 				<UserAvater avater={avater} />
 			</div>
 			<div className='p-2 flex-1 flex-shrink-0'>
-				<h3 className='font-medium tracking-wide text-slate-600'>
-					{!name ? AppName : name}
-				</h3>
+				<div className='flex items-center justify-between'>
+					<h3 className='font-medium tracking-wide text-sm text-slate-600'>
+						{!name ? AppName : name}
+					</h3>
+					{!!timestamp && (
+						<p className='text-slate-400 font-normal text-[10px]'>
+							{timestamp}
+						</p>
+					)}
+				</div>
 				{threadId || userId ? null : (
 					<div className={`mt-0.5 flex items-center text-xs tracking-wide`}>
-						{!isOwnerMessage || lastMessage === '' ? null : (
+						{!isOwnerMessage || lastMessage === '' || isTyping ? null : (
 							<FiCornerDownRight className='w-3 h-3 stroke-2' />
 						)}
 
@@ -102,8 +110,10 @@ const FriendLabel: React.FC<PropType> = ({
 						) : null}
 					</div>
 				)}
-				{!threadId ? null : <ParformRequest threadId={threadId} />}
-				{!userId ? null : (
+				{labelFor !== 'request' || !threadId ? null : (
+					<ParformRequest threadId={threadId} userId={userId!} />
+				)}
+				{labelFor !== 'people' || !userId ? null : (
 					<div className='mt-1 flex items-center'>
 						<AddRequest userId={userId} />
 					</div>
@@ -116,46 +126,34 @@ const FriendLabel: React.FC<PropType> = ({
 export default FriendLabel;
 
 export const FriendLabelHeader = ({ isOnline = false }: PropType) => {
-	const {
-		state: { chat },
-		dispatch,
-	} = useApp();
-
-	const navigate = useNavigate();
-
-	const toggleMenu = () => {
-		dispatch({ type: 'TOGGLE_LIST' });
-		navigate('/');
-	};
+	const { bio, activeRoom } = useAppSelector(selectChat);
 
 	return (
-		<div className='px-4 py-2 flex items-center justify-between border-b border-indigo-200'>
+		<div className='px-2 md:px-4 py-2 flex items-center justify-between border-b border-indigo-200'>
 			<div className='flex items-center'>
-				<button
-					type='button'
-					className='outline-none p-2 mr-3 inline-block md:hidden rounded-full hover:bg-indigo-100'
-					onClick={toggleMenu}
-					title='Message'
+				<HomeButton />
+				<Link
+					to={`/${!bio?.participant ? 'g' : 's'}/${activeRoom}`}
+					className='flex items-center gap-2'
 				>
-					<FiMenu className='w-6 h-6 stroke-1 text-gray-600' />
-				</button>
-				<div className='relative w-10 h-10 border border-indigo-200 rounded-full'>
-					<UserAvater avater={chat?.bio?.avater} />
-				</div>
-				<div className='p-2 flex-1 flex-shrink-0'>
-					<h3 className='font-semibold tracking-wide text-slate-600'>
-						{chat?.bio?.name || 'ChatMe'}
-					</h3>
-					{!isOnline ? (
-						<p className='text-sm font-light tracking-wide text-indigo-300'>
-							{!chat?.bio?.name ? 'Online' : 'Offline'}
-						</p>
-					) : (
-						<p className='text-sm font-light tracking-wide text-indigo-600'>
-							Online
-						</p>
-					)}
-				</div>
+					<div className='relative w-10 h-10 border border-indigo-200 rounded-full'>
+						<UserAvater avater={bio?.avater} />
+					</div>
+					<div className='flex-1 flex-shrink-0'>
+						<h3 className='font-semibold tracking-wide text-slate-600'>
+							{bio?.name || 'ChatMe'}
+						</h3>
+						{!isOnline ? (
+							<p className='text-sm font-light tracking-wide text-indigo-300'>
+								{!bio?.name ? 'Online' : 'Offline'}
+							</p>
+						) : (
+							<p className='text-sm font-light tracking-wide text-indigo-600'>
+								Online
+							</p>
+						)}
+					</div>
+				</Link>
 			</div>
 			<button
 				type='button'
